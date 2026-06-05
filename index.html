@@ -665,20 +665,26 @@ footer p{font-family:var(--mono);font-size:0.68rem;color:var(--text3)}
         </a>
       </div>
     </div>
-    <div class="contact-form reveal in">
-      <div>
-        <label class="fl">Name</label>
-        <input class="fi" type="text" placeholder="Your name" id="fname">
-      </div>
-      <div>
-        <label class="fl">Email</label>
-        <input class="fi" type="email" placeholder="your@email.com" id="femail">
-      </div>
-      <div>
-        <label class="fl">Message</label>
-        <textarea class="fi" placeholder="Tell me about your project or role..." rows="4" id="fmsg"></textarea>
-      </div>
-      <button class="submit" onclick="handleSubmit(this)">Send Message →</button>
+    <div <form class="contact-form reveal in" action="https://formsubmit.co" method="POST"> 
+    <!-- Anti-spam protection -->
+    <input type="text" name="_honey" style="display:none">
+    <!-- Skips reCAPTCHA screen -->
+    <input type="hidden" name="_captcha" value="false">
+
+    <div> 
+        <label class="fl">Name</label> 
+        <!-- Added name="Name" attribute -->
+        <input class="fi" type="text" placeholder="Your name" id="fname" name="Name" required> 
+    </div> 
+    <div> 
+        <label class="fl">Email</label> 
+        <!-- Added name="Email" attribute -->
+        <input class="fi" type="email" placeholder="your@email.com" id="femail" name="Email" required> 
+    </div> 
+    <div> 
+        <label class="fl">Message</label> 
+        <!-- Added name="Message" attribute -->
+        <textarea class="fi" placeholder="Tell me about your project or role..." rows="4" id="fmsg" name="Message" required></textarea> 
     </div>
   </div>
 </section>
