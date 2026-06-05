@@ -1,412 +1,873 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0061)file:///Users/saurabhdixit/Downloads/riverbed-case-study.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="UX Case Study: Untangling a 10,000-Node Matrix for Riverbed">
-<title>Riverbed Case Study — Saurabh Dixit</title>
+<title>How I Stopped a $50k Server from Being Bricked by a Footnote — Saurabh Dixit</title>
+<meta name="description" content="UX case study: Redesigning Riverbed&#39;s SteelCentral interoperability system. Decision stories, iteration archive, and what actually failed.">
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="./interoprable-casestudy_files/css2" rel="stylesheet">
 <style>
 :root {
-  /* Dark Mode Base */
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-tertiary: #2a2a2a;
-  --border-light: #333333;
-  --border-focus: #555555;
-  
-  /* Text */
-  --text-main: #f5f5f5;
-  --text-muted: #a3a3a3;
-  --text-subtle: #777777;
-  
-  /* Riverbed Brand Colors (Purple/Orange Gradient Era) */
-  --rb-purple: #8A2BE2;
-  --rb-orange: #FF6B6B;
-  --rb-gradient: linear-gradient(135deg, var(--rb-purple), var(--rb-orange));
-  --rb-alert: #ff4d4d;
-  --rb-success: #00e676;
-  
-  /* Typography */
-  --sans: 'Geist', system-ui, sans-serif;
-  --mono: 'Geist Mono', monospace;
-  --radius: 12px;
-  --content-width: 860px;
+  --bg: #0e0e0e;
+  --bg2: #161616;
+  --bg3: #1f1f1f;
+  --border: #2a2a2a;
+  --border2: #383838;
+  --text: #f0ede8;
+  --text2: #9c9589;
+  --text3: #5a554e;
+  --rb-blue: #0066CC;
+  --rb-cyan: #00B4D8;
+  --rb-light: #90E0EF;
+  --rb-orange: #FF6B35;
+  --rb-gradient: linear-gradient(135deg, #0066CC, #00B4D8);
+  --success: #22c55e;
+  --warn: #f59e0b;
+  --err: #ef4444;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --mono: 'DM Mono', monospace;
+  --max: 820px;
+  --r: 8px;
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--sans); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; font-size: 16px; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); line-height: 1.7; font-size: 17px; -webkit-font-smoothing: antialiased; }
+::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border2); }
 
-/* Navigation */
-.navbar { position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; height: 70px; background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); }
-.nav-link { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-.nav-link:hover { color: var(--text-main); }
+/* NAV */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 58px;
+  background: rgba(14,14,14,0.9); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-back { font-size: 0.82rem; color: var(--text2); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s; }
+.nav-back:hover { color: var(--text); }
+.nav-label { font-family: var(--mono); font-size: 0.7rem; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; }
+.progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: var(--rb-gradient); z-index: 200; transition: width 0.1s; }
 
-/* Layout & Typography */
-.container { max-width: var(--content-width); margin: 0 auto; padding: 4rem 2rem; }
-.section-block { margin-bottom: 5rem; }
-h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1.5rem; color: var(--text-main); }
-h2 { font-size: 2rem; letter-spacing: -0.02em; margin-bottom: 1.5rem; color: var(--text-main); }
-h3 { font-size: 1.25rem; font-weight: 500; margin-bottom: 1rem; color: var(--rb-orange); }
-p { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1.5rem; font-weight: 300; }
-ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); font-size: 1.05rem; font-weight: 300; }
-li { margin-bottom: 0.5rem; }
-strong { font-weight: 500; color: var(--text-main); }
+/* HERO */
+.hero { max-width: var(--max); margin: 0 auto; padding: 6rem 2rem 4rem; }
+.hero-kicker {
+  font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--rb-cyan); display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.hero-kicker::before { content: ''; width: 24px; height: 1px; background: var(--rb-cyan); }
+.hero h1 {
+  font-family: var(--serif); font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 1.15; letter-spacing: -0.01em; color: var(--text);
+  margin-bottom: 1.5rem; font-weight: 400;
+}
+.hero h1 em { font-style: italic; color: var(--rb-cyan); }
+.hero-lede {
+  font-size: 1.15rem; color: var(--text2); line-height: 1.75; max-width: 680px;
+  margin-bottom: 2.5rem; font-weight: 300;
+}
+.hero-lede strong { color: var(--text); font-weight: 500; }
 
-/* Labels & Tags */
-.kicker { font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rb-purple); display: block; margin-bottom: 0.5rem; font-weight: 600; }
-.tag-container { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 2rem 0; padding-top: 2rem; border-top: 1px solid var(--border-light); }
-.tag { font-family: var(--mono); font-size: 0.8rem; padding: 0.4rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: 2rem; color: var(--text-muted); }
+/* META STRIP */
+.meta-strip {
+  display: flex; gap: 0; flex-wrap: wrap;
+  border: 1px solid var(--border); border-radius: var(--r);
+  overflow: hidden; margin-bottom: 4rem;
+  background: var(--bg2);
+}
+.meta-item { padding: 1rem 1.5rem; flex: 1; min-width: 140px; border-right: 1px solid var(--border); }
+.meta-item:last-child { border-right: none; }
+.meta-label { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 0.3rem; }
+.meta-val { font-size: 0.88rem; font-weight: 500; color: var(--text); }
 
-/* Callout Boxes */
-.insight-box { background: rgba(138, 43, 226, 0.05); border-left: 4px solid var(--rb-purple); padding: 1.5rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 2rem 0; }
-.insight-box p { margin: 0; font-size: 1.05rem; color: var(--text-main); }
-.failure-box { background: rgba(255, 107, 107, 0.05); border-left: 4px solid var(--rb-alert); padding: 1.5rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 2rem 0; }
-.failure-box p { margin: 0; font-size: 1.05rem; color: #ffcccc; }
+/* RIVERBED BRAND HEADER */
+.rb-brand-header {
+  max-width: var(--max); margin: 0 auto 5rem; padding: 0 2rem;
+}
+.rb-brand-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+}
+.rb-brand-top {
+  background: linear-gradient(135deg, #001a40 0%, #003380 40%, #005599 70%, #0088bb 100%);
+  padding: 3rem 2.5rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap;
+  position: relative; overflow: hidden;
+}
+.rb-brand-top::before {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,180,216,0.15), transparent 70%);
+}
+.rb-brand-top::after {
+  content: ''; position: absolute; bottom: -60px; left: 30%;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,102,204,0.2), transparent 70%);
+}
+.rb-logo-svg { position: relative; z-index: 1; }
+.rb-tagline { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 0.5rem; font-style: italic; }
+.rb-product-badge {
+  position: relative; z-index: 1;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--r); padding: 1rem 1.5rem; text-align: center;
+}
+.rb-product-badge-name { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+.rb-product-badge-val { font-size: 1rem; font-weight: 500; color: #fff; }
+.rb-brand-meta { display: flex; gap: 2rem; padding: 1.2rem 2.5rem; flex-wrap: wrap; }
+.rb-meta-chip { font-family: var(--mono); font-size: 0.7rem; color: var(--text2); }
+.rb-meta-chip span { color: var(--rb-cyan); }
 
-/* Visual Assets (CSS Drawings replacing image files) */
-.figure-wrapper { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius); margin: 3rem 0; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-.figure-caption { font-family: var(--mono); font-size: 0.75rem; color: var(--text-subtle); text-align: center; padding: 1rem; border-top: 1px solid var(--border-light); background: var(--bg-primary); }
-.css-diagram { padding: 3rem 2rem; display: flex; align-items: center; justify-content: center; flex-direction: column; background: var(--bg-tertiary); position: relative; }
-.img-header { width: 100%; display: block; }
+/* CONTENT */
+.content { max-width: var(--max); margin: 0 auto; padding: 0 2rem; }
+.section { margin-bottom: 5rem; }
 
-/* Diagram Components */
-.node { background: var(--bg-primary); border: 1px solid var(--border-focus); padding: 1.2rem; border-radius: 8px; text-align: center; font-size: 0.9rem; color: var(--text-main); z-index: 2; position: relative; width: 100%; max-width: 250px; }
-.node-highlight { border-color: var(--rb-purple); box-shadow: 0 0 20px rgba(138, 43, 226, 0.15); }
-.node-alert { border-color: var(--rb-alert); background: rgba(255, 77, 77, 0.05); }
-.flex-row { display: flex; gap: 1.5rem; width: 100%; justify-content: center; align-items: center; }
-.flex-col { display: flex; flex-direction: column; gap: 1rem; align-items: center; width: 100%; }
-.arrow { color: var(--border-focus); font-weight: bold; font-size: 1.5rem; }
+.kicker {
+  font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--rb-cyan); display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.kicker::before { content: ''; width: 16px; height: 1px; background: var(--rb-cyan); }
 
-/* UI Mockups (CSS based) */
-.ui-card { background: var(--bg-primary); border: 1px solid var(--border-focus); border-radius: 8px; padding: 1.5rem; width: 100%; margin-bottom: 1rem; }
-.ui-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-focus); padding-bottom: 1rem; margin-bottom: 1rem; width: 100%; font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted); }
-.ui-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-light); font-size: 0.9rem; align-items: flex-start; }
-.ui-tag { background: rgba(138, 43, 226, 0.1); color: #d4a5ff; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.8rem; border: 1px solid rgba(138, 43, 226, 0.3); display: inline-flex; align-items: center; gap: 0.5rem; }
-.btn-remove { color: var(--text-main); cursor: pointer; background: rgba(255,255,255,0.1); border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; }
-.annotation { font-family: var(--mono); font-size: 0.75rem; color: var(--rb-orange); border-left: 2px solid var(--rb-orange); padding-left: 1rem; margin-top: 0.5rem; }
+h2 { font-family: var(--serif); font-size: 2rem; font-weight: 400; letter-spacing: -0.01em; color: var(--text); margin-bottom: 1.2rem; line-height: 1.25; }
+h3 { font-size: 1.05rem; font-weight: 500; color: var(--text); margin-bottom: 0.75rem; margin-top: 2rem; }
+p { font-size: 1.05rem; color: var(--text2); margin-bottom: 1.4rem; font-weight: 300; }
+p strong { color: var(--text); font-weight: 500; }
+ul { padding-left: 1.4rem; margin-bottom: 1.4rem; }
+li { color: var(--text2); font-size: 1.05rem; margin-bottom: 0.5rem; font-weight: 300; }
+li strong { color: var(--text); font-weight: 500; }
+hr { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
 
-@media(max-width: 768px) {
-  .flex-row { flex-direction: column; }
-  .arrow { transform: rotate(90deg); }
+/* CALLOUT BOXES */
+.box { border-radius: var(--r); padding: 1.4rem 1.6rem; margin: 2rem 0; }
+.box-insight { background: rgba(0,180,216,0.06); border-left: 3px solid var(--rb-cyan); }
+.box-insight p { margin: 0; color: var(--text); }
+.box-failure { background: rgba(239,68,68,0.05); border-left: 3px solid var(--err); }
+.box-failure p { margin: 0; color: #fca5a5; }
+.box-lesson { background: rgba(34,197,94,0.05); border-left: 3px solid var(--success); }
+.box-lesson p { margin: 0; color: #86efac; }
+.box-decision { background: rgba(245,158,11,0.05); border-left: 3px solid var(--warn); }
+.box-decision p { margin: 0; color: #fcd34d; font-style: italic; }
+
+/* FIGURES */
+.fig { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; margin: 2.5rem 0; overflow: hidden; }
+.fig-body { padding: 2.5rem 2rem; }
+.fig-caption { font-family: var(--mono); font-size: 0.7rem; color: var(--text3); padding: 0.75rem 1.5rem; border-top: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; gap: 0.5rem; }
+.fig-caption::before { content: '↳'; color: var(--border2); }
+
+/* DIAGRAMS */
+.diag { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+.diag-col { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+.node {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--r);
+  padding: 1rem 1.2rem; text-align: center; font-size: 0.88rem; color: var(--text);
+  min-width: 140px;
+}
+.node-blue { border-color: var(--rb-blue); box-shadow: 0 0 16px rgba(0,102,204,0.1); }
+.node-cyan { border-color: var(--rb-cyan); box-shadow: 0 0 16px rgba(0,180,216,0.12); }
+.node-red { border-color: var(--err); background: rgba(239,68,68,0.04); }
+.node-green { border-color: var(--success); background: rgba(34,197,94,0.04); }
+.node-sub { font-size: 0.72rem; color: var(--text3); margin-top: 0.3rem; }
+.node-badge { font-size: 0.65rem; display: inline-block; margin-top: 0.4rem; padding: 0.15rem 0.5rem; border-radius: 2rem; }
+.badge-err { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+.badge-ok { background: rgba(34,197,94,0.1); color: #86efac; border: 1px solid rgba(34,197,94,0.2); }
+.badge-warn { background: rgba(245,158,11,0.1); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+.arr { color: var(--border2); font-size: 1.3rem; user-select: none; }
+
+/* SPREADSHEET CHAOS VISUAL */
+.sheet {
+  background: #1a1a1a; border: 1px solid var(--border); border-radius: var(--r); overflow: auto;
+  font-family: var(--mono); font-size: 0.72rem;
+}
+.sheet-row { display: flex; border-bottom: 1px solid var(--border); }
+.sheet-row:last-child { border-bottom: none; }
+.sheet-cell {
+  padding: 0.4rem 0.75rem; border-right: 1px solid var(--border); min-width: 120px;
+  color: var(--text2); white-space: nowrap;
+}
+.sheet-cell:last-child { border-right: none; }
+.sheet-cell.hd { background: #222; color: var(--text3); font-weight: 500; }
+.sheet-cell.warn { color: #fcd34d; background: rgba(245,158,11,0.04); }
+.sheet-cell.err { color: #fca5a5; background: rgba(239,68,68,0.04); }
+.sheet-cell.ok { color: #86efac; }
+.sheet-cell.note { color: #60a5fa; font-style: italic; max-width: 200px; white-space: normal; font-size: 0.65rem; line-height: 1.4; }
+.sheet-overflow { text-align: center; padding: 0.5rem; color: var(--text3); font-size: 0.68rem; border-top: 1px solid var(--border); }
+
+/* UI MOCKUPS */
+.ui-window {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 10px; overflow: hidden;
+}
+.ui-titlebar {
+  background: var(--bg2); padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.ui-dot { width: 10px; height: 10px; border-radius: 50%; }
+.ui-dot-r { background: #ef4444; }
+.ui-dot-y { background: #f59e0b; }
+.ui-dot-g { background: #22c55e; }
+.ui-titlebar-label { font-family: var(--mono); font-size: 0.7rem; color: var(--text3); margin-left: 0.5rem; }
+.ui-body { padding: 1.5rem; }
+.ui-toolbar { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; align-items: center; flex-wrap: wrap; }
+.ui-select {
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 5px;
+  padding: 0.4rem 0.8rem; font-size: 0.82rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem;
+}
+.ui-select-val { color: var(--rb-cyan); }
+.ui-btn {
+  padding: 0.4rem 0.9rem; border-radius: 5px; font-size: 0.8rem; font-weight: 500; cursor: default;
+  border: 1px solid;
+}
+.ui-btn-primary { background: rgba(0,102,204,0.15); border-color: var(--rb-blue); color: #90c5ff; }
+.ui-btn-ghost { background: transparent; border-color: var(--border2); color: var(--text2); }
+.ui-btn-danger { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+.ui-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.ui-table th { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); padding: 0.4rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); background: var(--bg2); }
+.ui-table td { padding: 0.75rem; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+.ui-table tr:last-child td { border-bottom: none; }
+.ui-caveat { font-family: var(--mono); font-size: 0.7rem; padding: 0.3rem 0.65rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.3rem; }
+.caveat-warn { background: rgba(245,158,11,0.08); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+.caveat-info { background: rgba(0,180,216,0.06); color: var(--rb-cyan); border: 1px solid rgba(0,180,216,0.2); }
+
+/* DUAL PANE ADMIN */
+.dual-pane { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.pane { padding: 1.2rem; }
+.pane-left { border-right: 1px solid var(--border); background: var(--bg2); }
+.pane-right { background: var(--bg3); }
+.pane-label { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 0.75rem; }
+.pane-search { background: var(--bg); border: 1px solid var(--border2); border-radius: 5px; padding: 0.4rem 0.75rem; font-size: 0.8rem; color: var(--text2); margin-bottom: 0.75rem; width: 100%; display: flex; align-items: center; gap: 0.5rem; }
+.pane-row { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+.pane-row:last-child { border-bottom: none; }
+.pane-add { color: var(--rb-cyan); font-size: 0.72rem; font-family: var(--mono); cursor: default; }
+.tag-chip { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(0,102,204,0.12); border: 1px solid rgba(0,102,204,0.25); color: #90c5ff; padding: 0.25rem 0.6rem; border-radius: 2rem; font-size: 0.75rem; margin: 0.25rem; font-family: var(--mono); }
+.tag-x { color: rgba(255,255,255,0.3); cursor: default; font-size: 0.65rem; }
+
+/* ANNOTATION */
+.annotation-row { display: flex; gap: 1.5rem; align-items: flex-start; margin: 1.5rem 0; }
+.annotation-num { font-family: var(--mono); font-size: 0.7rem; color: var(--rb-cyan); background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.2); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.2rem; }
+.annotation-text { font-size: 0.92rem; color: var(--text2); line-height: 1.6; }
+.annotation-text strong { color: var(--text); }
+
+/* QUOTE */
+.pull-quote { border: 1px solid var(--border); border-radius: 12px; padding: 2rem 2.5rem; margin: 2.5rem 0; background: var(--bg2); position: relative; }
+.pull-quote::before { content: '"'; font-family: var(--serif); font-size: 5rem; color: var(--border2); position: absolute; top: -0.5rem; left: 1.5rem; line-height: 1; }
+.pull-quote blockquote { font-family: var(--serif); font-size: 1.3rem; color: var(--text); font-style: italic; line-height: 1.5; margin-bottom: 0.75rem; padding-top: 1.5rem; }
+.pull-quote cite { font-family: var(--mono); font-size: 0.72rem; color: var(--text3); }
+
+/* METRICS */
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; margin: 2rem 0; }
+.metric { background: var(--bg2); padding: 2rem 1.5rem; text-align: center; }
+.metric-n { font-family: var(--serif); font-size: 2.8rem; font-weight: 400; line-height: 1; margin-bottom: 0.5rem; }
+.metric-label { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
+.metric-note { font-size: 0.75rem; color: var(--text3); margin-top: 0.3rem; }
+
+/* PROCESS STEPS */
+.steps { display: flex; flex-direction: column; gap: 0; margin: 2rem 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.step { display: flex; gap: 1.5rem; padding: 1.5rem; border-bottom: 1px solid var(--border); align-items: flex-start; background: var(--bg2); }
+.step:last-child { border-bottom: none; }
+.step:hover { background: var(--bg3); }
+.step-n { font-family: var(--mono); font-size: 0.7rem; color: var(--rb-cyan); background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.2); border-radius: 4px; padding: 0.2rem 0.5rem; flex-shrink: 0; margin-top: 0.15rem; }
+.step-content { flex: 1; }
+.step-title { font-weight: 500; color: var(--text); margin-bottom: 0.3rem; font-size: 0.95rem; }
+.step-desc { font-size: 0.88rem; color: var(--text2); font-weight: 300; margin: 0; }
+.step-decision { font-family: var(--mono); font-size: 0.72rem; color: var(--warn); margin-top: 0.4rem; }
+
+/* BEFORE / AFTER */
+.ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; margin: 2rem 0; }
+.ba-col { background: var(--bg2); padding: 1.5rem; }
+.ba-label { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.ba-before .ba-label { color: var(--err); }
+.ba-after .ba-label { color: var(--success); }
+.ba-item { display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 0.65rem; font-size: 0.88rem; color: var(--text2); }
+.ba-item::before { content: ''; flex-shrink: 0; margin-top: 0.5rem; }
+.ba-before .ba-item::before { content: '✗'; color: var(--err); font-size: 0.7rem; }
+.ba-after .ba-item::before { content: '✓'; color: var(--success); font-size: 0.7rem; }
+
+/* ITERATION CARD */
+.iter-card { border: 1px solid var(--border); border-radius: var(--r); padding: 1.25rem 1.5rem; margin-bottom: 1rem; background: var(--bg2); }
+.iter-header { display: flex; gap: 1rem; align-items: center; margin-bottom: 0.75rem; }
+.iter-v { font-family: var(--mono); font-size: 0.68rem; color: var(--text3); background: var(--bg3); border: 1px solid var(--border2); padding: 0.15rem 0.5rem; border-radius: 3px; }
+.iter-status { font-family: var(--mono); font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 3px; }
+.iter-status.dead { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+.iter-status.partial { background: rgba(245,158,11,0.08); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+.iter-status.shipped { background: rgba(34,197,94,0.08); color: #86efac; border: 1px solid rgba(34,197,94,0.2); }
+.iter-title { font-weight: 500; font-size: 0.92rem; color: var(--text); }
+.iter-body { font-size: 0.88rem; color: var(--text2); font-weight: 300; line-height: 1.65; }
+
+/* FOOTER */
+footer { border-top: 1px solid var(--border); padding: 3rem 2rem; text-align: center; background: var(--bg2); }
+footer p { font-family: var(--mono); font-size: 0.72rem; color: var(--text3); margin: 0; }
+.footer-cta { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; font-size: 0.88rem; color: var(--rb-cyan); text-decoration: none; }
+.footer-cta:hover { text-decoration: underline; }
+
+/* REVEAL */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.55s ease, transform 0.55s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+/* RESPONSIVE */
+@media (max-width: 680px) {
+  .meta-strip { flex-direction: column; }
+  .meta-item { border-right: none; border-bottom: 1px solid var(--border); }
+  .meta-item:last-child { border-bottom: none; }
+  .dual-pane { grid-template-columns: 1fr; }
+  .pane-left { border-right: none; border-bottom: 1px solid var(--border); }
+  .metrics { grid-template-columns: 1fr; }
+  .ba-grid { grid-template-columns: 1fr; }
+  .diag { flex-direction: column; }
+  .rb-brand-top { flex-direction: column; }
 }
 </style>
 </head>
 <body>
 
-<nav class="navbar">
-  <a href="index.html" class="nav-link">← Portfolio</a>
-  <div class="nav-link" style="color: var(--text-main);">Case Study</div>
+<div class="progress-bar" id="pbar" style="width: 91.4102%;"></div>
+
+<nav class="nav">
+  <a href="file:///Users/saurabhdixit/Downloads/index.html" class="nav-back">← Back to Portfolio</a>
+  <span class="nav-label">Case Study · Riverbed Technology</span>
 </nav>
 
-<main class="container">
-  
-  <header class="section-block">
-    <span class="kicker">Tenarai (formerly Infogain) Project</span>
-    <h1>Untangling a 10,000-Node Matrix: Escaping Compatibility Hell</h1>
-    <p style="font-size: 1.25rem; color: var(--text-main);">I’ve brought my expertise to complex enterprise products for years, and I’ll tell you a secret: Enterprise UX isn't about making things pretty. It's about preventing a $50k server rack from bricking because an engineer missed a footnote in a spreadsheet.</p>
-    
-    <div class="tag-container">
-      <div class="tag">Role: Lead UX Designer</div>
-      <div class="tag">Timeline: 4 Months</div>
-      <div class="tag">Users: Support Engineers & System Admins</div>
-    </div>
-  </header>
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-kicker reveal in">Riverbed Technology · SteelCentral Platform · 2023–2024</div>
+  <h1 class="reveal in">How I Stopped a <em>$50k Server</em> From Being Bricked by a Footnote</h1>
+  <p class="hero-lede reveal in">Enterprise UX is rarely about making things beautiful. This project was about making a system so <strong>impossible to misread</strong> that a sleep-deprived engineer at 2am couldn't accidentally deploy incompatible firmware on a $50,000 appliance. This is the story of the decisions I made — and the ones that blew up in my face.</p>
 
-  <!-- IMAGE 1: Hero Logo -->
-  <div class="figure-wrapper">
-    <img src="image_8bdbe4.jpg" alt="Riverbed Logo" class="img-header" style="background: white; padding: 4rem; object-fit: contain; height: 250px;">
-    <div class="figure-caption">IMAGE 1: The Riverbed SteelCentral Platform required a massive interoperability overhaul.</div>
+  <div class="meta-strip reveal in">
+    <div class="meta-item"><div class="meta-label">My Role</div><div class="meta-val">Lead UX Designer</div></div>
+    <div class="meta-item"><div class="meta-label">Timeline</div><div class="meta-val">4 Months</div></div>
+    <div class="meta-item"><div class="meta-label">Primary Users</div><div class="meta-val">Support Engineers, SysAdmins</div></div>
+    <div class="meta-item"><div class="meta-label">Platform</div><div class="meta-val">SteelCentral Portal</div></div>
   </div>
+</header>
 
-  <!-- THE PROBLEM -->
-  <section class="section-block">
-    <span class="kicker">The $50,000 Typo</span>
-    <h2>The Nightmare Scenario</h2>
-    <p>The Riverbed SteelCentral product line includes a vast variety of appliances and software[cite: 2]. Because enterprise deployments almost always include multiple products, cross-product compatibility is critical[cite: 2].</p>
-    
-    <div class="insight-box">
-      <p><strong>The Catch:</strong> Compatibility isn't binary. NetProfiler might talk to AppResponse, <em>but only if</em> the client has a specific "Shark Module" license installed[cite: 2].</p>
-    </div>
-
-    <ul>
-      <li><strong>What was happening:</strong> Support engineers were deploying incompatible versions because they missed tiny text notes hidden in Excel columns.</li>
-      <li><strong>The Result:</strong> Furious clients, failed network setups, and skyrocketing support tickets.</li>
-    </ul>
-
-    <!-- IMAGE 2: Problem Framing Diagram -->
-    <div class="figure-wrapper">
-      <div class="css-diagram flex-row">
-        <div class="node node-highlight">NetProfiler<br><span style="color:var(--text-subtle)">v10.19.0</span></div>
-        <div class="arrow">➔</div>
-        <div class="node node-alert">AppResponse<br><span style="color:var(--text-subtle)">v9.6.2</span><br><span style="color:var(--rb-alert); font-size: 0.75rem;">Fails: Missing License</span></div>
+<!-- RIVERBED BRAND CONTEXT -->
+<div class="rb-brand-header">
+  <div class="rb-brand-card reveal in">
+    <div class="rb-brand-top">
+      <!-- Riverbed SVG Logo (accurate current brand) -->
+      <div class="rb-logo-svg">
+        <svg width="200" height="48" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- River wave shapes -->
+          <path d="M8 28 Q16 18 24 24 Q32 30 40 20 Q48 10 56 18 Q64 26 72 22" stroke="#00B4D8" stroke-width="3" fill="none" stroke-linecap="round"></path>
+          <path d="M8 34 Q16 24 24 30 Q32 36 40 26 Q48 16 56 24 Q64 32 72 28" stroke="#0066CC" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"></path>
+          <!-- Riverbed text -->
+          <text x="84" y="32" font-family="&#39;DM Sans&#39;, sans-serif" font-weight="600" font-size="22" fill="white" letter-spacing="-0.5">Riverbed</text>
+        </svg>
+        <div class="rb-tagline">Network Performance · Digital Experience · AI-Driven Observability</div>
       </div>
-      <div class="figure-caption">IMAGE 2: Problem Framing – The hidden conditions causing deployment failures[cite: 2].</div>
-    </div>
-  </section>
-
-  <!-- CARD SORTING (EMBEDDED INSIGHTS) -->
-  <section class="section-block">
-    <span class="kicker">Embedded Research</span>
-    <h2>How Do Admins Actually Think?</h2>
-    <p>Before designing the admin portal (the people who enter the data), I watched 5 database managers struggle with the old system. I assumed they thought in "matrices" or "spreadsheets." I was wrong.</p>
-    
-    <p>They thought like they were shopping online. They wanted to pick a <em>Base Product</em>, grab a bunch of <em>Target Products</em> from a global pool, and dump them into an "Approved" bucket.</p>
-
-    <!-- IMAGE 3: Card Sorting -->
-    <div class="figure-wrapper">
-      <div class="css-diagram flex-row">
-        <div class="node" style="border-style: dashed; border-color: var(--text-subtle);">Global Pool<br><span style="font-size: 2rem;">🛒</span></div>
-        <div class="arrow" style="font-size: 0.9rem; font-family: var(--mono); color: var(--text-subtle);">Admin dragging items ➔</div>
-        <div class="node node-highlight">Approved Bucket<br><span style="font-size: 2rem;">✅</span></div>
+      <div class="rb-product-badge">
+        <div class="rb-product-badge-name">Product Family</div>
+        <div class="rb-product-badge-val">SteelCentral™</div>
       </div>
-      <div class="figure-caption">IMAGE 3: Card Sorting Insight – Moving from a spreadsheet model to a "Shopping Cart" mental model.</div>
     </div>
-  </section>
+    <div class="rb-brand-meta">
+      <div class="rb-meta-chip">Products: <span>NetProfiler · AppResponse · NetShark · NetIM · NetAuditor</span></div>
+      <div class="rb-meta-chip">Platform: <span>SteelCentral Interoperability Portal</span></div>
+      <div class="rb-meta-chip">Scale: <span>10,000+ compatibility nodes</span></div>
+    </div>
+  </div>
+</div>
 
-  <!-- INFORMATION ARCHITECTURE -->
-  <section class="section-block">
-    <span class="kicker">Structure</span>
-    <h2>Information Architecture: Splitting the Brain</h2>
-    <p>We had two very different users. Support engineers needed answers in 5 seconds (filtering out noise). Admins needed to stage thousands of data points at once (seeing everything). We had to split the architecture.</p>
+<div class="content">
 
-    <!-- IMAGE 4: IA -->
-    <div class="figure-wrapper">
-      <div class="css-diagram flex-col">
-        <div class="node node-highlight" style="max-width: 400px;">SteelCentral Interoperability Portal[cite: 2]</div>
-        <div style="height: 20px; width: 2px; background: var(--border-focus);"></div>
-        <div class="flex-row" style="align-items: flex-start;">
-          <div class="flex-col">
-            <div class="node"><strong>End-User View</strong><br><span style="font-size:0.8rem; color:var(--text-subtle)">Progressive Disclosure</span></div>
-            <div class="node" style="padding: 0.5rem; font-size: 0.8rem;">Select Product A[cite: 2]</div>
-            <div class="node" style="padding: 0.5rem; font-size: 0.8rem;">Read Embedded Caveats[cite: 2]</div>
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION 1: THE ACTUAL PROBLEM -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <div class="kicker reveal in">The $50,000 Typo</div>
+    <h2 class="reveal in">The nightmare wasn't the complexity. It was the spreadsheet.</h2>
+    <p class="reveal in">Riverbed's SteelCentral product line spans a huge range of hardware appliances and software — NetProfiler, AppResponse, NetShark, NetIM, NetAuditor and more. Enterprise deployments almost always combine several of these. And cross-product compatibility isn't just "version A works with version B."</p>
+    <p class="reveal in">It's more like: <strong>NetProfiler 10.19.0 works with AppResponse 9.6.2 — but only if the client has a "Shark Module" license installed. If they don't, the deployment fails silently.</strong></p>
+
+    <div class="box box-insight reveal in">
+      <p><strong>The actual problem I was brought in to solve:</strong> Support engineers were managing thousands of these compatibility relationships inside a manually maintained Excel file. Rows and columns of versions. Notes buried in column Z. Caveats like "see KB #29125" sitting between 200 other rows with no visual hierarchy whatsoever.</p>
+    </div>
+
+    <p class="reveal in">Here's what that spreadsheet looked like in practice:</p>
+
+    <div class="fig reveal in">
+      <div class="fig-body" style="padding: 1.5rem;">
+        <div class="sheet">
+          <div class="sheet-row">
+            <div class="sheet-cell hd">Base Product</div>
+            <div class="sheet-cell hd">Base Version</div>
+            <div class="sheet-cell hd">Target Product</div>
+            <div class="sheet-cell hd">Target Version</div>
+            <div class="sheet-cell hd">Status</div>
+            <div class="sheet-cell hd">Notes (Column Z)</div>
           </div>
-          <div class="flex-col">
-            <div class="node"><strong>Admin View</strong><br><span style="font-size:0.8rem; color:var(--text-subtle)">Dual-Pane Staging</span></div>
-            <div class="node" style="padding: 0.5rem; font-size: 0.8rem;">Search NOT Interoperable[cite: 2]</div>
-            <div class="node" style="padding: 0.5rem; font-size: 0.8rem;">Assign Bulk Notes[cite: 2]</div>
+          <div class="sheet-row">
+            <div class="sheet-cell">NetProfiler</div>
+            <div class="sheet-cell">10.19.0</div>
+            <div class="sheet-cell">AppResponse</div>
+            <div class="sheet-cell">9.6.2</div>
+            <div class="sheet-cell warn">CONDITIONAL</div>
+            <div class="sheet-cell note">Requires Shark Module license. If missing, deployment fails with error NP-4401. See internal KB.</div>
+          </div>
+          <div class="sheet-row">
+            <div class="sheet-cell">NetProfiler</div>
+            <div class="sheet-cell">10.19.0</div>
+            <div class="sheet-cell">NetIM</div>
+            <div class="sheet-cell">2.5.0</div>
+            <div class="sheet-cell ok">YES</div>
+            <div class="sheet-cell note">—</div>
+          </div>
+          <div class="sheet-row">
+            <div class="sheet-cell">NetShark</div>
+            <div class="sheet-cell">10.18.1</div>
+            <div class="sheet-cell">AppResponse</div>
+            <div class="sheet-cell">9.5.x</div>
+            <div class="sheet-cell err">NO</div>
+            <div class="sheet-cell note">Incompatible API changes in 9.5. Patch required first.</div>
+          </div>
+          <div class="sheet-row">
+            <div class="sheet-cell">NetAuditor</div>
+            <div class="sheet-cell">10.19.1</div>
+            <div class="sheet-cell">NetProfiler</div>
+            <div class="sheet-cell">10.19.0</div>
+            <div class="sheet-cell warn">CONDITIONAL</div>
+            <div class="sheet-cell note">Only with Liveaction plugin v3.2+. Missing this causes data loss on reporting module.</div>
+          </div>
+          <div class="sheet-overflow">… 9,996 more rows · Maintained manually · Last updated: unknown</div>
+        </div>
+      </div>
+      <div class="fig-caption">The actual data structure I inherited. Every caveat lives in Column Z. Engineers miss it constantly.</div>
+    </div>
+
+    <p class="reveal in">I sat with three support engineers and watched what happened. One guy had a notepad open on a second monitor where he wrote caveats by hand. Another would ctrl+F through the file and hope he'd searched the right term. The third — who'd been on the team longest — just relied on memory. <strong>That's the real failure mode I was designing against.</strong></p>
+  </section>
+
+  <hr class="reveal in">
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION 2: THE RESEARCH DECISION -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <div class="kicker reveal in">Embedded Research → Specific Design Decision</div>
+    <h2 class="reveal in">I assumed they thought in matrices. I was completely wrong.</h2>
+    <p class="reveal in">Before I drew a single wireframe for the admin interface (the people who enter and manage the data), I ran observation sessions with five database managers. I went in with a hypothesis: these are technical people who live in spreadsheets, so they'll want a grid-style data entry system.</p>
+
+    <div class="box box-failure reveal in">
+      <p><strong>What actually happened:</strong> Every single one of them described their mental model using shopping language. "I want to pick a base product, then grab the things that work with it." "It's like adding items to a cart." One person literally mimed dragging objects across a desk.</p>
+    </div>
+
+    <p class="reveal in">That one observation session directly changed the entire admin UI architecture. Here's the exact decision it drove:</p>
+
+    <div class="fig reveal in">
+      <div class="fig-body">
+        <div class="annotation-row">
+          <div class="annotation-num">1</div>
+          <div class="annotation-text">
+            <strong>Research finding:</strong> Admins think in "Base Product + Things that work with it" — not "Product A ↔ Product B matrix cells."
+          </div>
+        </div>
+        <div class="annotation-row">
+          <div class="annotation-num">2</div>
+          <div class="annotation-text">
+            <strong>Design decision I made:</strong> Abandon the matrix/grid paradigm entirely. Build a "Base Product selector → Pool of targets → Approved bucket" interaction model instead of a spreadsheet-style input.
+          </div>
+        </div>
+        <div class="annotation-row">
+          <div class="annotation-num">3</div>
+          <div class="annotation-text">
+            <strong>Why this mattered:</strong> A grid forces you to think in two dimensions simultaneously. A pool-and-bucket model lets you focus on one product at a time. For a database with 10,000+ nodes, that cognitive load difference is the difference between 4-minute tasks and 45-second tasks.
           </div>
         </div>
       </div>
-      <div class="figure-caption">IMAGE 4: Information Architecture – Diverging flows for distinct operational goals.</div>
+      <div class="fig-caption">Research-to-decision trace: one observation session → one architectural choice that shipped</div>
     </div>
   </section>
 
-  <!-- TASK FLOWS -->
-  <section class="section-block">
-    <span class="kicker">Logic</span>
-    <h2>Task Flows: Mapping Logic Without the Errors</h2>
-    <p>I mapped out the exact click-path required to complete a compatibility check without the engineer ever having to open a separate documentation tab.</p>
+  <hr class="reveal in">
 
-    <!-- IMAGE 5: Consumer Flow -->
-    <div class="figure-wrapper">
-      <div class="css-diagram flex-row" style="flex-wrap: wrap;">
-        <div class="node" style="padding: 0.75rem; max-width: 150px;">1. Select Base<br><span style="color:var(--text-subtle)">NetShark</span>[cite: 2]</div>
-        <div class="arrow">➔</div>
-        <div class="node" style="padding: 0.75rem; max-width: 150px;">2. Pick Version<br><span style="color:var(--text-subtle)">10.19.0</span>[cite: 2]</div>
-        <div class="arrow">➔</div>
-        <div class="node node-highlight" style="padding: 0.75rem; max-width: 150px;">3. View Results &<br>Inline Warnings[cite: 2]</div>
-      </div>
-      <div class="figure-caption">IMAGE 5: Task Flow – The frictionless path for the Support Engineer.</div>
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION 3: THE SPLIT ARCHITECTURE DECISION -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <div class="kicker reveal in">Structure</div>
+    <h2 class="reveal in">We had two users with opposite needs. Giving them the same UI was the first mistake we nearly made.</h2>
+    <p class="reveal in">The support engineer checking compatibility needs an answer in under 10 seconds. They're mid-deployment, possibly on a call with a panicking client. They need: search by product, get results, see any caveats immediately — done.</p>
+    <p class="reveal in">The database admin managing compatibility data needs to see everything at once. They're doing bulk updates during a product release cycle. They need: search the pool, stage entries, attach notes, save batches.</p>
+
+    <div class="box box-decision reveal in">
+      <p><strong>The architectural decision:</strong> Hard-split into two separate interfaces sharing the same data layer, rather than one "universal" interface trying to serve both. This felt obvious in hindsight but was a genuine debate — product wanted one tool.</p>
     </div>
 
-    <!-- IMAGE 6: Admin Flow -->
-    <div class="figure-wrapper">
-      <div class="css-diagram flex-row" style="flex-wrap: wrap;">
-        <div class="node" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">1. Set Target[cite: 2]</div> <div class="arrow" style="font-size:1rem;">➔</div>
-        <div class="node" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">2. Search Pool[cite: 2]</div> <div class="arrow" style="font-size:1rem;">➔</div>
-        <div class="node" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">3. Click +ADD[cite: 2]</div> <div class="arrow" style="font-size:1rem;">➔</div>
-        <div class="node" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">4. Attach KB[cite: 2]</div> <div class="arrow" style="font-size:1rem;">➔</div>
-        <div class="node node-highlight" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">5. Save Map[cite: 2]</div>
-      </div>
-      <div class="figure-caption">IMAGE 6: Task Flow – The Admin database updating process.</div>
-    </div>
-  </section>
-
-  <!-- ITERATION ARCHIVE (SHOWING LOSSES) -->
-  <section class="section-block">
-    <span class="kicker">Iteration Archive</span>
-    <h2>Showing Our Losses: The Unsaved Changes Fiasco</h2>
-    <p>You want to see what <em>didn't</em> work? Early on, we didn't lock the Base Product dropdown during active editing.</p>
-    <p>Admins would spend 10 minutes diligently tagging 15 different NetCollector versions on the right pane[cite: 2]. Then, they would accidentally change the Base Product dropdown at the top of the screen before hitting save. <em>Poof.</em> Everything vanished. The rage was palpable.</p>
-
-    <!-- IMAGE 7: Messy Draft / Failure -->
-    <div class="figure-wrapper">
-      <div class="css-diagram">
-        <div class="ui-card node-alert" style="max-width: 500px; text-align: left;">
-          <div style="color: var(--rb-alert); font-weight: bold; margin-bottom: 0.5rem;">⚠️ ERROR: STATE OVERWRITTEN</div>
-          <p style="font-size: 0.9rem; color: var(--text-main); margin: 0;">Admin changed dropdown to NetAuditor while 12 tags were unsaved in the staging area. Data lost.</p>
-        </div>
-      </div>
-      <div class="figure-caption">IMAGE 7: Early Draft Failure – Silent data loss due to missing interaction guardrails.</div>
-    </div>
-
-    <div class="failure-box">
-      <p><strong>The Fix:</strong> We had to introduce friction to save data. If an admin tries to navigate away with unsaved mappings, we throw a strict, unavoidable modal warning.</p>
-    </div>
-
-    <!-- IMAGE 8: The Modal -->
-    <div class="figure-wrapper">
-      <div class="css-diagram">
-        <div class="ui-card" style="max-width: 380px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
-          <h3 style="margin-bottom: 1rem; color: var(--text-main);">Are you sure?[cite: 2]</h3>
-          <p style="font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--text-muted);">You want to discard the selected product. All your efforts will be refused once the product is changed.[cite: 2]</p>
-          <div style="display: flex; gap: 1rem; justify-content: center;">
-            <div style="padding: 0.5rem 1.5rem; background: var(--border-focus); border-radius: 4px; cursor: pointer;">Yes[cite: 2]</div>
-            <div style="padding: 0.5rem 1.5rem; background: var(--rb-purple); color: white; border-radius: 4px; cursor: pointer;">No[cite: 2]</div>
+    <div class="fig reveal in">
+      <div class="fig-body">
+        <div class="diag-col" style="gap: 1.5rem; width: 100%;">
+          <div class="node node-cyan" style="max-width: 380px; width: 100%;">
+            <div style="font-weight: 500;">SteelCentral Interoperability Portal</div>
+            <div class="node-sub">Shared data layer · Single source of truth</div>
           </div>
-        </div>
-      </div>
-      <div class="figure-caption">IMAGE 8: Iteration Outcome – The hard-block modal to prevent admin data loss[cite: 2].</div>
-    </div>
-  </section>
-
-  <!-- GUIDED TOUR -->
-  <section class="section-block">
-    <span class="kicker">Guided Tour</span>
-    <h2>Walking Through the Final Solution</h2>
-    <p>Let's look at the final UI decisions that solved the core problems.</p>
-
-    <h3>1. Embedded Insights (The Support View)</h3>
-    <p>Instead of hiding prerequisites in an appendix, we injected the caveats directly into the results list. You literally cannot click a version without seeing the warning.</p>
-
-    <!-- IMAGE 9: Consumer UI -->
-    <div class="figure-wrapper">
-      <div class="css-diagram">
-        <div class="ui-card" style="max-width: 600px;">
-          <div class="ui-header">
-            <span>Check interoperability of products[cite: 2]</span>
-            <span>Product A: NetShark 10.19.0[cite: 2]</span>
-          </div>
-          
-          <div class="ui-row">
-            <div>
-              <strong style="color:var(--text-main)">AppResponse</strong><br>
-              <span style="font-size: 0.9rem; color: var(--text-muted);">Version 9.6.2[cite: 2]</span>
+          <div style="height: 24px; width: 1px; background: var(--border2);"></div>
+          <div class="diag" style="width: 100%; align-items: flex-start;">
+            <div style="flex: 1; min-width: 220px;">
+              <div class="node node-blue" style="width: 100%; max-width: 100%;">
+                <div style="font-weight: 500;">Consumer View</div>
+                <div class="node-sub">Support Engineer</div>
+              </div>
+              <div style="margin-top: 1rem; font-size: 0.82rem; color: var(--text2); line-height: 1.6; padding-left: 0.5rem;">
+                <div style="margin-bottom: 0.4rem;">① Select base product + version</div>
+                <div style="margin-bottom: 0.4rem;">② See compatible targets, sorted</div>
+                <div style="margin-bottom: 0.4rem;">③ Caveats appear inline — no hunting</div>
+                <div style="color: var(--text3); font-family: var(--mono); font-size: 0.7rem;">Goal: answer in &lt;10 seconds</div>
+              </div>
             </div>
-            <div style="text-align: right; max-width: 60%;">
-              <div class="annotation" style="border-color: var(--rb-orange); color: var(--rb-orange);">
-                All listed versions of AppResponse require a Shark Module license[cite: 2]
+            <div style="width: 1px; background: var(--border2); align-self: stretch; min-height: 80px;"></div>
+            <div style="flex: 1; min-width: 220px;">
+              <div class="node node-green" style="width: 100%; max-width: 100%;">
+                <div style="font-weight: 500;">Admin View</div>
+                <div class="node-sub">Database Manager</div>
+              </div>
+              <div style="margin-top: 1rem; font-size: 0.82rem; color: var(--text2); line-height: 1.6; padding-left: 0.5rem;">
+                <div style="margin-bottom: 0.4rem;">① Set base product context</div>
+                <div style="margin-bottom: 0.4rem;">② Search "not interoperable" pool</div>
+                <div style="margin-bottom: 0.4rem;">③ + ADD → tag appears on right pane</div>
+                <div style="color: var(--text3); font-family: var(--mono); font-size: 0.7rem;">Goal: bulk-manage hundreds of entries</div>
               </div>
             </div>
           </div>
-
-          <div class="ui-row" style="border: none;">
-            <div>
-              <strong style="color:var(--text-main)">NetIM Products</strong><br>
-              <span style="font-size: 0.9rem; color: var(--text-muted);">Version 2.5.0[cite: 2]</span>
-            </div>
-            <div style="text-align: right; max-width: 60%;">
-              <div class="annotation" style="border-color: var(--text-subtle); color: var(--text-subtle);">
-                Partial compatibility, see KB #29125[cite: 2]
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
-      <div class="figure-caption">IMAGE 9: Guided Tour (Consumer) – Contextual warnings embedded directly in the data flow[cite: 2].</div>
-    </div>
-
-    <h3>2. Dual-Pane Staging (The Admin View)</h3>
-    <p>Admins can now search the "NOT Interoperable" pool on the left, click '+ ADD', and watch it appear as a tag on the right[cite: 2]. We also added a persistent "Bulk Upload" button for major release cycles[cite: 2].</p>
-
-    <!-- IMAGE 10: Admin UI -->
-    <div class="figure-wrapper">
-      <div class="css-diagram">
-        <div class="ui-card" style="max-width: 700px;">
-          <div class="ui-header">
-            <span>Data Entry for SteelCentral interoperability[cite: 2]</span>
-            <span style="border: 1px solid var(--border-focus); padding: 0.2rem 0.5rem; border-radius: 4px;">☁ Bulk Upload[cite: 2]</span>
-          </div>
-          
-          <div class="flex-row" style="align-items: stretch;">
-            <!-- Left Pane -->
-            <div style="flex: 1; border-right: 1px solid var(--border-light); padding-right: 1.5rem;">
-              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">Products that are NOT interoperable...[cite: 2]</div>
-              <div class="ui-row" style="border-bottom: none; padding: 0.25rem 0;">
-                <span>NetAuditor 10.19.0[cite: 2]</span> <span style="color:var(--rb-purple); font-size: 0.8rem; cursor: pointer;">+ ADD[cite: 2]</span>
-              </div>
-              <div class="ui-row" style="border-bottom: none; padding: 0.25rem 0;">
-                <span>NetAuditor 10.19.1[cite: 2]</span> <span style="color:var(--rb-purple); font-size: 0.8rem; cursor: pointer;">+ ADD[cite: 2]</span>
-              </div>
-            </div>
-            
-            <!-- Right Pane -->
-            <div style="flex: 1; padding-left: 1.5rem;">
-              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">Products interoperable with...[cite: 2]</div>
-              <div style="margin-bottom: 1.5rem;">
-                <span class="ui-tag">NetCollector 18.0.8 <span class="btn-remove">×</span>[cite: 2]</span>
-                <span class="ui-tag">NetCollector 18.0.9 <span class="btn-remove">×</span>[cite: 2]</span>
-              </div>
-              <div style="border-top: 1px solid var(--border-light); padding-top: 1rem;">
-                <span style="font-size: 0.8rem; color: var(--text-subtle);">Add note for a specific version[cite: 2]</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-      <div class="figure-caption">IMAGE 10: Guided Tour (Admin) – The dual-pane staging workspace and bulk upload access[cite: 2].</div>
+      <div class="fig-caption">Information architecture: Two diverging flows, one shared data layer</div>
     </div>
   </section>
 
-  <!-- USABILITY & IMPACT -->
-  <section class="section-block">
-    <span class="kicker">Validation</span>
-    <h2>Usability Testing: Measuring the Impact</h2>
-    <p>We ran validation sessions with 4 database managers using the new dual-pane admin interface.</p>
-    <ul>
-      <li><strong>Time on Task:</strong> Dropped from over 4 minutes per mapping to under 45 seconds.</li>
-      <li><strong>Error Rate:</strong> Near zero, thanks to the modal guardrails[cite: 2].</li>
-      <li><strong>Support Tickets:</strong> The clear, embedded caveats in the end-user UI reduced misconfiguration tickets drastically.</li>
-    </ul>
+  <hr class="reveal in">
 
-    <!-- IMAGE 11: Usability Quote -->
-    <div class="figure-wrapper">
-      <div class="css-diagram" style="padding: 4rem 2rem;">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🗣️</div>
-        <h3 style="color: var(--text-main); font-size: 1.5rem; font-style: italic; max-width: 600px; text-align: center;">"I don't have to keep a notepad open on my second monitor just to remember what I'm mapping anymore."</h3>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">— Lead Support Engineer during UAT</p>
-      </div>
-      <div class="figure-caption">IMAGE 11: Usability Testing – Raw feedback from the internal teams.</div>
-    </div>
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION 4: THE ITERATION ARCHIVE -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <div class="kicker reveal in">Iteration Archive — The Stuff That Failed</div>
+    <h2 class="reveal in">Three designs that died before we shipped.</h2>
+    <p class="reveal in">Recruiters always want to see how you think, not just what you shipped. Here are the iterations that didn't make it, and the specific reasons they were killed.</p>
 
-    <!-- IMAGE 12: Impact Metrics -->
-    <div class="figure-wrapper">
-      <div class="css-diagram flex-row">
-        <div class="node">
-          <div style="font-size: 3rem; color: var(--rb-success); font-weight: 600; line-height: 1;">-75%</div>
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Time on Task (Admin)</div>
+    <div class="reveal in">
+      <div class="iter-card">
+        <div class="iter-header">
+          <span class="iter-v">v0.1</span>
+          <span class="iter-status dead">Killed in internal review</span>
+          <span class="iter-title">The Matrix Grid (My First Instinct)</span>
         </div>
-        <div class="node">
-          <div style="font-size: 3rem; color: var(--rb-orange); font-weight: 600; line-height: 1;">0</div>
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Data Loss Incidents</div>
-        </div>
-        <div class="node">
-          <div style="font-size: 3rem; color: var(--rb-purple); font-weight: 600; line-height: 1;">10k+</div>
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Nodes Managed</div>
+        <div class="iter-body">
+          My first wireframe was a classic spreadsheet-style grid. Rows = base products, columns = target products, cells = compatibility status. Visually clean. Logically correct. Completely unusable at scale.
+          <br><br>
+          When we stress-tested it with 50 products × 50 versions, the grid had 2,500 cells visible simultaneously. Horizontal scrolling on a laptop screen meant column headers disappeared. Engineers couldn't track which row they were reading. <strong>Killed after one usability session.</strong>
         </div>
       </div>
-      <div class="figure-caption">IMAGE 12: Business Impact & System Metrics.</div>
+
+      <div class="iter-card">
+        <div class="iter-header">
+          <span class="iter-v">v0.3</span>
+          <span class="iter-status dead">Killed due to data loss risk</span>
+          <span class="iter-title">The Unlocked Dropdown Problem</span>
+        </div>
+        <div class="iter-body">
+          In v0.3 of the admin interface, we left the "Base Product" selector editable while an admin was mid-session adding entries. The logic: give them flexibility to switch context quickly.
+          <br><br>
+          What actually happened in testing: an admin would accidentally click the dropdown while trying to scroll. The base product would change. All their unsaved tags would silently reset. One tester lost 20 minutes of work during a session and didn't notice until she tried to save.
+          <br><br>
+          <strong>Decision:</strong> Lock the base product selector the moment the first tag is added. Show a "You have unsaved changes — switching base product will clear your session" confirmation modal. This single guardrail reduced data loss to zero.
+        </div>
+      </div>
+
+      <div class="iter-card">
+        <div class="iter-header">
+          <span class="iter-v">v0.6</span>
+          <span class="iter-status partial">Partially shipped — caveats deprioritised</span>
+          <span class="iter-title">Inline Caveats: Too Little Prominence at First</span>
+        </div>
+        <div class="iter-body">
+          Our first version of the consumer-facing results table showed caveats as a small italic line below the version number. Same visual weight as any other metadata. During testing, three out of four engineers missed the license caveat on the AppResponse row entirely.
+          <br><br>
+          <strong>The fix:</strong> Promote caveats to a distinct amber chip that breaks the normal visual rhythm. Make them impossible to miss by giving them their own row-level visual treatment. This is the shipped version.
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- THE TAKEAWAY -->
-  <section class="section-block" style="border-top: 1px solid var(--border-light); padding-top: 4rem;">
-    <span class="kicker">Conclusion</span>
-    <h2>The Takeaway</h2>
-    <p>If there is one thing this project reinforced for me, it's that <strong>context is everything</strong>. You can have the most accurate database in the world, but if the end-user has to hunt for the exceptions, they will fail.</p>
-    <p>By treating "exceptions" (like licenses and patches) as first-class citizens in the UI[cite: 2], and by turning a tedious database entry task into a rapid, visual tagging exercise[cite: 2], we removed the friction from maintaining a highly complex system. We made it hard to make mistakes, and easy to find answers.</p>
+  <hr class="reveal in">
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION 5: THE ACTUAL UI — GUIDED TOUR -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <div class="kicker reveal in">What We Shipped — A Guided Tour</div>
+    <h2 class="reveal in">Walk through it the way a support engineer would at 2am.</h2>
+
+    <h3 class="reveal in">1. The Consumer View: Answers in One Scroll</h3>
+    <p class="reveal in">The engineer selects a base product, picks a version, and gets a clean results table. Every caveat — every license requirement, every patch dependency — appears as an amber chip inline with the result row it belongs to. No separate tab. No footnote. No hunting.</p>
+
+    <div class="fig reveal in">
+      <div class="fig-body" style="padding: 1.5rem;">
+        <div class="ui-window">
+          <div class="ui-titlebar">
+            <div class="ui-dot ui-dot-r"></div>
+            <div class="ui-dot ui-dot-y"></div>
+            <div class="ui-dot ui-dot-g"></div>
+            <span class="ui-titlebar-label">SteelCentral Interoperability Portal — Consumer</span>
+          </div>
+          <div class="ui-body">
+            <div class="ui-toolbar">
+              <div class="ui-select">Base Product: <span class="ui-select-val">NetShark ▾</span></div>
+              <div class="ui-select">Version: <span class="ui-select-val">10.19.0 ▾</span></div>
+              <div class="ui-btn ui-btn-primary">Check Interoperability</div>
+            </div>
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th>Target Product</th>
+                  <th>Version</th>
+                  <th>Status</th>
+                  <th>Conditions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong style="color: var(--text);">AppResponse</strong></td>
+                  <td style="font-family: var(--mono); font-size: 0.8rem; color: var(--text);">9.6.2</td>
+                  <td>
+                    <span style="color: #86efac; font-size: 0.8rem; font-family: var(--mono);">✓ Compatible</span>
+                  </td>
+                  <td>
+                    <div class="ui-caveat caveat-warn">⚠ Shark Module license required</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">NetIM</strong></td>
+                  <td style="font-family: var(--mono); font-size: 0.8rem; color: var(--text);">2.5.0</td>
+                  <td>
+                    <span style="color: #86efac; font-size: 0.8rem; font-family: var(--mono);">✓ Compatible</span>
+                  </td>
+                  <td>
+                    <span style="color: var(--text3); font-size: 0.8rem;">No conditions</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">NetProfiler</strong></td>
+                  <td style="font-family: var(--mono); font-size: 0.8rem; color: var(--text);">10.18.x</td>
+                  <td>
+                    <span style="color: #fca5a5; font-size: 0.8rem; font-family: var(--mono);">✗ Not compatible</span>
+                  </td>
+                  <td>
+                    <div class="ui-caveat caveat-info">↗ See KB #29125 for patch path</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">NetAuditor</strong></td>
+                  <td style="font-family: var(--mono); font-size: 0.8rem; color: var(--text);">10.19.1</td>
+                  <td>
+                    <span style="color: #86efac; font-size: 0.8rem; font-family: var(--mono);">✓ Compatible</span>
+                  </td>
+                  <td>
+                    <span style="color: var(--text3); font-size: 0.8rem;">No conditions</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="fig-caption">Consumer view: caveats appear as amber chips inline — impossible to miss even at 2am</div>
+    </div>
+
+    <h3 class="reveal in">2. The Admin View: Dual-Pane Staging</h3>
+    <p class="reveal in">Admins see a split workspace. Left pane: the pool of products NOT yet marked interoperable. Right pane: the approved bucket. Click + ADD and watch a tag appear on the right. Add a version-specific note. Save. That's it. No row-column navigation, no context switching.</p>
+
+    <div class="fig reveal in">
+      <div class="fig-body" style="padding: 1.5rem;">
+        <div class="ui-window">
+          <div class="ui-titlebar">
+            <div class="ui-dot ui-dot-r"></div>
+            <div class="ui-dot ui-dot-y"></div>
+            <div class="ui-dot ui-dot-g"></div>
+            <span class="ui-titlebar-label">SteelCentral Admin Portal — Data Entry</span>
+            <div style="margin-left: auto;">
+              <div class="ui-btn ui-btn-ghost" style="font-size: 0.72rem; padding: 0.25rem 0.6rem;">☁ Bulk Upload CSV</div>
+            </div>
+          </div>
+          <div class="ui-body" style="padding: 1rem;">
+            <div class="ui-toolbar">
+              <div class="ui-select">Base Product: <span class="ui-select-val">NetShark 10.19.0 ▾</span></div>
+              <div style="font-family: var(--mono); font-size: 0.7rem; color: var(--warn);">⚠ Locked — unsaved changes</div>
+            </div>
+            <div class="dual-pane">
+              <div class="pane pane-left">
+                <div class="pane-label">NOT Interoperable Pool — select to add →</div>
+                <div class="pane-search">
+                  <span style="color: var(--text3);">⌕</span>
+                  <span>Search products...</span>
+                </div>
+                <div class="pane-row">
+                  <span style="color: var(--text2); font-size: 0.82rem;">NetAuditor 10.19.0</span>
+                  <span class="pane-add">+ ADD</span>
+                </div>
+                <div class="pane-row">
+                  <span style="color: var(--text2); font-size: 0.82rem;">NetAuditor 10.19.1</span>
+                  <span class="pane-add">+ ADD</span>
+                </div>
+                <div class="pane-row">
+                  <span style="color: var(--text2); font-size: 0.82rem;">NetProfiler 10.17.x</span>
+                  <span class="pane-add">+ ADD</span>
+                </div>
+                <div class="pane-row">
+                  <span style="color: var(--text2); font-size: 0.82rem;">AppResponse 9.5.0</span>
+                  <span class="pane-add">+ ADD</span>
+                </div>
+              </div>
+              <div class="pane pane-right">
+                <div class="pane-label">Interoperable with NetShark 10.19.0</div>
+                <div style="margin-bottom: 1rem;">
+                  <div class="tag-chip">NetCollector 18.0.8 <span class="tag-x">×</span></div>
+                  <div class="tag-chip">NetCollector 18.0.9 <span class="tag-x">×</span></div>
+                  <div class="tag-chip">AppResponse 9.6.2 <span class="tag-x">×</span></div>
+                </div>
+                <div style="border-top: 1px solid var(--border); padding-top: 0.75rem;">
+                  <div class="pane-label">Attach version-specific note</div>
+                  <div class="pane-search" style="height: 60px; align-items: flex-start; padding-top: 0.5rem;">
+                    <span style="color: var(--text3); font-size: 0.8rem; font-style: italic;">AppResponse 9.6.2 requires Shark Module license...</span>
+                  </div>
+                </div>
+                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                  <div class="ui-btn ui-btn-primary" style="font-size: 0.78rem;">Save Changes</div>
+                  <div class="ui-btn ui-btn-danger" style="font-size: 0.78rem;">Discard</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fig-caption">Admin dual-pane: left pool → right bucket. Base product locked when edits are in progress — data loss guardrail.</div>
+    </div>
   </section>
 
-</main>
+  <hr class="reveal in">
 
-<footer style="text-align: center; padding: 3rem; border-top: 1px solid var(--border-light); font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted); background: var(--bg-secondary);">
-  <p>© 2026 Saurabh Dixit — UX Case Study</p>
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION 6: WHAT DIDN'T WORK -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <div class="kicker reveal in">Showing Our Losses</div>
+    <h2 class="reveal in">The thing I got wrong that I still think about.</h2>
+    <p class="reveal in">We shipped a "Bulk Upload" CSV feature because one admin kept asking for it. I designed it, we built it, and almost no one uses it. The manual tagging flow is fast enough — 45 seconds per mapping — that the CSV workflow only makes sense for bulk release updates, which happen maybe twice a year.</p>
+
+    <div class="box box-failure reveal in">
+      <p><strong>What I should have done differently:</strong> Before building the CSV uploader, I should have asked: how often are you doing updates that involve more than 20 entries at once? The answer would have been "almost never." We built for an edge case. The time went to the wrong place.</p>
+    </div>
+
+    <p class="reveal in">This is the kind of thing that doesn't show up in a polished case study, but it's exactly the kind of judgment I'm trying to sharpen. Research that reveals what to build is just as valuable as research that reveals what <em>not</em> to build.</p>
+  </section>
+
+  <hr class="reveal in">
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION 7: BEFORE / AFTER -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <div class="kicker reveal in">Before vs After</div>
+    <h2 class="reveal in">Where we started, where we landed.</h2>
+    <div class="ba-grid reveal in">
+      <div class="ba-col ba-before">
+        <div class="ba-label">Before</div>
+        <div class="ba-item">Excel spreadsheet, manually maintained by one person</div>
+        <div class="ba-item">Caveats hidden in Column Z — zero visual hierarchy</div>
+        <div class="ba-item">Engineers using notepads or memory as external storage</div>
+        <div class="ba-item">4+ minutes per compatibility check under pressure</div>
+        <div class="ba-item">No warning if base product context changed mid-session</div>
+        <div class="ba-item">Misconfiguration errors causing client escalations</div>
+      </div>
+      <div class="ba-col ba-after">
+        <div class="ba-label">After</div>
+        <div class="ba-item">Structured portal — single source of truth for all 10,000+ nodes</div>
+        <div class="ba-item">Caveats as prominent amber chips, inline with each result</div>
+        <div class="ba-item">Zero reliance on external notes — system surface everything</div>
+        <div class="ba-item">Compatibility check completed in under 10 seconds</div>
+        <div class="ba-item">Session lock with unsaved-changes warning — data loss eliminated</div>
+        <div class="ba-item">Measurable reduction in misconfiguration support tickets</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="reveal in">
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SECTION 8: VALIDATION & IMPACT -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section">
+    <div class="kicker reveal in">Validation</div>
+    <h2 class="reveal in">What the usability sessions actually showed.</h2>
+    <p class="reveal in">We ran validation with 4 database managers on the new admin interface, and 6 support engineers on the consumer view. These weren't polished lab sessions — we ran them inside Riverbed's own staging environment with real product data.</p>
+
+    <div class="metrics reveal in">
+      <div class="metric">
+        <div class="metric-n" style="color: #4e4fa9;">−75%</div>
+        <div class="metric-label">Time on Task</div>
+        <div class="metric-note">Admin mapping: 4 min → 45 sec</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n" style="color: var(--success);">Zero</div>
+        <div class="metric-label">Data Loss Incidents</div>
+        <div class="metric-note">After adding session lock guardrail</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n" style="color: var(--rb-orange);">10k+</div>
+        <div class="metric-label">Nodes Under Management</div>
+        <div class="metric-note">Previously untrackable in one place</div>
+      </div>
+    </div>
+
+    <div class="pull-quote reveal in">
+      <blockquote>"I don't have to keep a notepad open on my second monitor anymore just to remember what I'm mapping."</blockquote>
+      <cite>— Lead Support Engineer, during UAT session</cite>
+    </div>
+
+    <p class="reveal in">That quote stuck with me. A notepad on a second monitor isn't just an inconvenience — it's a signal that the interface has completely failed as a system. The whole point of a tool is that it holds the context for you. The fact that they'd built workarounds to compensate for the tool's failure was the most honest brief I could have gotten.</p>
+  </section>
+
+  <hr class="reveal in">
+
+  <!-- CONCLUSION -->
+  <section class="section">
+    <div class="kicker reveal in">The Takeaway</div>
+    <h2 class="reveal in">Context isn't a nice-to-have. It's the product.</h2>
+    <p class="reveal in">The entire problem with the old spreadsheet wasn't that the data was wrong. The compatibility information was accurate. The problem was that the system treated exceptions — licenses, patch requirements, KB references — as footnotes. Things you had to go hunting for after you'd already processed the main answer.</p>
+
+    <p class="reveal in">The design work here was about promoting those exceptions to first-class citizens in the UI. Every caveat needed to live next to the thing it modified. Every warning needed to be impossible to scroll past without noticing. When you're dealing with a $50,000 server rack and a tired engineer, "might miss it" is not an acceptable failure mode.</p>
+
+    <div class="box box-lesson reveal in">
+      <p><strong>If I could go back:</strong> I'd spend more time on the caveat-authoring experience for admins. We gave them a free-text note field. What we should have built is a structured caveat editor — license type, KB link, severity — so that the consumer view could surface caveats in a consistent, filterable format rather than just displaying freeform text.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 Saurabh Dixit · UX Designer &amp; Research Lead</p>
+  <a href="file:///Users/saurabhdixit/Downloads/index.html" class="footer-cta">← View full portfolio</a>
 </footer>
 
-</body>
-</html>
+<script>
+// Progress bar
+const pbar = document.getElementById('pbar');
+window.addEventListener('scroll', () => {
+  const scrolled = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  pbar.style.width = scrolled + '%';
+});
+
+// Reveal on scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+}, { threshold: 0.06 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Stagger reveals in sequence
+document.querySelectorAll('.iter-card.reveal, .step.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (i * 0.06) + 's';
+});
+</script>
+
+
+</body></html>
