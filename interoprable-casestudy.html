@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="UX Case Study: Untangling a 10,000-Node Matrix for Riverbed">
+<title>Riverbed Case Study — Saurabh Dixit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Dark Mode Base */
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #2a2a2a;
+  --border-light: #333333;
+  --border-focus: #555555;
+  
+  /* Text */
+  --text-main: #f5f5f5;
+  --text-muted: #a3a3a3;
+  --text-subtle: #777777;
+  
+  /* Riverbed Brand Colors (Purple/Orange Gradient Era) */
+  --rb-purple: #8A2BE2;
+  --rb-orange: #FF6B6B;
+  --rb-gradient: linear-gradient(135deg, var(--rb-purple), var(--rb-orange));
+  --rb-alert: #ff4d4d;
+  --rb-success: #00e676;
+  
+  /* Typography */
+  --sans: 'Geist', system-ui, sans-serif;
+  --mono: 'Geist Mono', monospace;
+  --radius: 12px;
+  --content-width: 860px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; font-size: 16px; }
+
+/* Navigation */
+.navbar { position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; height: 70px; background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); }
+.nav-link { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+.nav-link:hover { color: var(--text-main); }
+
+/* Layout & Typography */
+.container { max-width: var(--content-width); margin: 0 auto; padding: 4rem 2rem; }
+.section-block { margin-bottom: 5rem; }
+h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1.5rem; color: var(--text-main); }
+h2 { font-size: 2rem; letter-spacing: -0.02em; margin-bottom: 1.5rem; color: var(--text-main); }
+h3 { font-size: 1.25rem; font-weight: 500; margin-bottom: 1rem; color: var(--rb-orange); }
+p { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1.5rem; font-weight: 300; }
+ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); font-size: 1.05rem; font-weight: 300; }
+li { margin-bottom: 0.5rem; }
+strong { font-weight: 500; color: var(--text-main); }
+
+/* Labels & Tags */
+.kicker { font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rb-purple); display: block; margin-bottom: 0.5rem; font-weight: 600; }
+.tag-container { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 2rem 0; padding-top: 2rem; border-top: 1px solid var(--border-light); }
+.tag { font-family: var(--mono); font-size: 0.8rem; padding: 0.4rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: 2rem; color: var(--text-muted); }
+
+/* Callout Boxes */
+.insight-box { background: rgba(138, 43, 226, 0.05); border-left: 4px solid var(--rb-purple); padding: 1.5rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 2rem 0; }
+.insight-box p { margin: 0; font-size: 1.05rem; color: var(--text-main); }
+.failure-box { background: rgba(255, 107, 107, 0.05); border-left: 4px solid var(--rb-alert); padding: 1.5rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 2rem 0; }
+.failure-box p { margin: 0; font-size: 1.05rem; color: #ffcccc; }
+
+/* Visual Assets (CSS Drawings replacing image files) */
+.figure-wrapper { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius); margin: 3rem 0; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.figure-caption { font-family: var(--mono); font-size: 0.75rem; color: var(--text-subtle); text-align: center; padding: 1rem; border-top: 1px solid var(--border-light); background: var(--bg-primary); }
+.css-diagram { padding: 3rem 2rem; display: flex; align-items: center; justify-content: center; flex-direction: column; background: var(--bg-tertiary); position: relative; }
+.img-header { width: 100%; display: block; }
+
+/* Diagram Components */
+.node { background: var(--bg-primary); border: 1px solid var(--border-focus); padding: 1.2rem; border-radius: 8px; text-align: center; font-size: 0.9rem; color: var(--text-main); z-index: 2; position: relative; width: 100%; max-width: 250px; }
+.node-highlight { border-color: var(--rb-purple); box-shadow: 0 0 20px rgba(138, 43, 226, 0.15); }
+.node-alert { border-color: var(--rb-alert); background: rgba(255, 77, 77, 0.05); }
+.flex-row { display: flex; gap: 1.5rem; width: 100%; justify-content: center; align-items: center; }
+.flex-col { display: flex; flex-direction: column; gap: 1rem; align-items: center; width: 100%; }
+.arrow { color: var(--border-focus); font-weight: bold; font-size: 1.5rem; }
+
+/* UI Mockups (CSS based) */
+.ui-card { background: var(--bg-primary); border: 1px solid var(--border-focus); border-radius: 8px; padding: 1.5rem; width: 100%; margin-bottom: 1rem; }
+.ui-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-focus); padding-bottom: 1rem; margin-bottom: 1rem; width: 100%; font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted); }
+.ui-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-light); font-size: 0.9rem; align-items: flex-start; }
+.ui-tag { background: rgba(138, 43, 226, 0.1); color: #d4a5ff; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.8rem; border: 1px solid rgba(138, 43, 226, 0.3); display: inline-flex; align-items: center; gap: 0.5rem; }
+.btn-remove { color: var(--text-main); cursor: pointer; background: rgba(255,255,255,0.1); border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; }
+.annotation { font-family: var(--mono); font-size: 0.75rem; color: var(--rb-orange); border-left: 2px solid var(--rb-orange); padding-left: 1rem; margin-top: 0.5rem; }
+
+@media(max-width: 768px) {
+  .flex-row { flex-direction: column; }
+  .arrow { transform: rotate(90deg); }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-link">← Portfolio</a>
+  <div class="nav-link" style="color: var(--text-main);">Case Study</div>
+</nav>
+
+<main class="container">
+  
+  <header class="section-block">
+    <span class="kicker">Tenarai (formerly Infogain) Project</span>
+    <h1>Untangling a 10,000-Node Matrix: Escaping Compatibility Hell</h1>
+    <p style="font-size: 1.25rem; color: var(--text-main);">I’ve brought my expertise to complex enterprise products for years, and I’ll tell you a secret: Enterprise UX isn't about making things pretty. It's about preventing a $50k server rack from bricking because an engineer missed a footnote in a spreadsheet.</p>
+    
+    <div class="tag-container">
+      <div class="tag">Role: Lead UX Designer</div>
+      <div class="tag">Timeline: 4 Months</div>
+      <div class="tag">Users: Support Engineers & System Admins</div>
+    </div>
+  </header>
+
+  <!-- IMAGE 1: Hero Logo -->
+  <div class="figure-wrapper">
+    <img src="image_8bdbe4.jpg" alt="Riverbed Logo" class="img-header" style="background: white; padding: 4rem; object-fit: contain; height: 250px;">
+    <div class="figure-caption">IMAGE 1: The Riverbed SteelCentral Platform required a massive interoperability overhaul.</div>
+  </div>
+
+  <!-- THE PROBLEM -->
+  <section class="section-block">
+    <span class="kicker">The $50,000 Typo</span>
+    <h2>The Nightmare Scenario</h2>
+    <p>The Riverbed SteelCentral product line includes a vast variety of appliances and software[cite: 2]. Because enterprise deployments almost always include multiple products, cross-product compatibility is critical[cite: 2].</p>
+    
+    <div class="insight-box">
+      <p><strong>The Catch:</strong> Compatibility isn't binary. NetProfiler might talk to AppResponse, <em>but only if</em> the client has a specific "Shark Module" license installed[cite: 2].</p>
+    </div>
+
+    <ul>
+      <li><strong>What was happening:</strong> Support engineers were deploying incompatible versions because they missed tiny text notes hidden in Excel columns.</li>
+      <li><strong>The Result:</strong> Furious clients, failed network setups, and skyrocketing support tickets.</li>
+    </ul>
+
+    <!-- IMAGE 2: Problem Framing Diagram -->
+    <div class="figure-wrapper">
+      <div class="css-diagram flex-row">
+        <div class="node node-highlight">NetProfiler<br><span style="color:var(--text-subtle)">v10.19.0</span></div>
+        <div class="arrow">➔</div>
+        <div class="node node-alert">AppResponse<br><span style="color:var(--text-subtle)">v9.6.2</span><br><span style="color:var(--rb-alert); font-size: 0.75rem;">Fails: Missing License</span></div>
+      </div>
+      <div class="figure-caption">IMAGE 2: Problem Framing – The hidden conditions causing deployment failures[cite: 2].</div>
+    </div>
+  </section>
+
+  <!-- CARD SORTING (EMBEDDED INSIGHTS) -->
+  <section class="section-block">
+    <span class="kicker">Embedded Research</span>
+    <h2>How Do Admins Actually Think?</h2>
+    <p>Before designing the admin portal (the people who enter the data), I watched 5 database managers struggle with the old system. I assumed they thought in "matrices" or "spreadsheets." I was wrong.</p>
+    
+    <p>They thought like they were shopping online. They wanted to pick a <em>Base Product</em>, grab a bunch of <em>Target Products</em> from a global pool, and dump them into an "Approved" bucket.</p>
+
+    <!-- IMAGE 3: Card Sorting -->
+    <div class="figure-wrapper">
+      <div class="css-diagram flex-row">
+        <div class="node" style="border-style: dashed; border-color: var(--text-subtle);">Global Pool<br><span style="font-size: 2rem;">🛒</span></div>
+        <div class="arrow" style="font-size: 0.9rem; font-family: var(--mono); color: var(--text-subtle);">Admin dragging items ➔</div>
+        <div class="node node-highlight">Approved Bucket<br><span style="font-size: 2rem;">✅</span></div>
+      </div>
+      <div class="figure-caption">IMAGE 3: Card Sorting Insight – Moving from a spreadsheet model to a "Shopping Cart" mental model.</div>
+    </div>
+  </section>
+
+  <!-- INFORMATION ARCHITECTURE -->
+  <section class="section-block">
+    <span class="kicker">Structure</span>
+    <h2>Information Architecture: Splitting the Brain</h2>
+    <p>We had two very different users. Support engineers needed answers in 5 seconds (filtering out noise). Admins needed to stage thousands of data points at once (seeing everything). We had to split the architecture.</p>
+
+    <!-- IMAGE 4: IA -->
+    <div class="figure-wrapper">
+      <div class="css-diagram flex-col">
+        <div class="node node-highlight" style="max-width: 400px;">SteelCentral Interoperability Portal[cite: 2]</div>
+        <div style="height: 20px; width: 2px; background: var(--border-focus);"></div>
+        <div class="flex-row" style="align-items: flex-start;">
+          <div class="flex-col">
+            <div class="node"><strong>End-User View</strong><br><span style="font-size:0.8rem; color:var(--text-subtle)">Progressive Disclosure</span></div>
+            <div class="node" style="padding: 0.5rem; font-size: 0.8rem;">Select Product A[cite: 2]</div>
+            <div class="node" style="padding: 0.5rem; font-size: 0.8rem;">Read Embedded Caveats[cite: 2]</div>
+          </div>
+          <div class="flex-col">
+            <div class="node"><strong>Admin View</strong><br><span style="font-size:0.8rem; color:var(--text-subtle)">Dual-Pane Staging</span></div>
+            <div class="node" style="padding: 0.5rem; font-size: 0.8rem;">Search NOT Interoperable[cite: 2]</div>
+            <div class="node" style="padding: 0.5rem; font-size: 0.8rem;">Assign Bulk Notes[cite: 2]</div>
+          </div>
+        </div>
+      </div>
+      <div class="figure-caption">IMAGE 4: Information Architecture – Diverging flows for distinct operational goals.</div>
+    </div>
+  </section>
+
+  <!-- TASK FLOWS -->
+  <section class="section-block">
+    <span class="kicker">Logic</span>
+    <h2>Task Flows: Mapping Logic Without the Errors</h2>
+    <p>I mapped out the exact click-path required to complete a compatibility check without the engineer ever having to open a separate documentation tab.</p>
+
+    <!-- IMAGE 5: Consumer Flow -->
+    <div class="figure-wrapper">
+      <div class="css-diagram flex-row" style="flex-wrap: wrap;">
+        <div class="node" style="padding: 0.75rem; max-width: 150px;">1. Select Base<br><span style="color:var(--text-subtle)">NetShark</span>[cite: 2]</div>
+        <div class="arrow">➔</div>
+        <div class="node" style="padding: 0.75rem; max-width: 150px;">2. Pick Version<br><span style="color:var(--text-subtle)">10.19.0</span>[cite: 2]</div>
+        <div class="arrow">➔</div>
+        <div class="node node-highlight" style="padding: 0.75rem; max-width: 150px;">3. View Results &<br>Inline Warnings[cite: 2]</div>
+      </div>
+      <div class="figure-caption">IMAGE 5: Task Flow – The frictionless path for the Support Engineer.</div>
+    </div>
+
+    <!-- IMAGE 6: Admin Flow -->
+    <div class="figure-wrapper">
+      <div class="css-diagram flex-row" style="flex-wrap: wrap;">
+        <div class="node" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">1. Set Target[cite: 2]</div> <div class="arrow" style="font-size:1rem;">➔</div>
+        <div class="node" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">2. Search Pool[cite: 2]</div> <div class="arrow" style="font-size:1rem;">➔</div>
+        <div class="node" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">3. Click +ADD[cite: 2]</div> <div class="arrow" style="font-size:1rem;">➔</div>
+        <div class="node" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">4. Attach KB[cite: 2]</div> <div class="arrow" style="font-size:1rem;">➔</div>
+        <div class="node node-highlight" style="padding: 0.5rem; max-width: 120px; font-size: 0.8rem;">5. Save Map[cite: 2]</div>
+      </div>
+      <div class="figure-caption">IMAGE 6: Task Flow – The Admin database updating process.</div>
+    </div>
+  </section>
+
+  <!-- ITERATION ARCHIVE (SHOWING LOSSES) -->
+  <section class="section-block">
+    <span class="kicker">Iteration Archive</span>
+    <h2>Showing Our Losses: The Unsaved Changes Fiasco</h2>
+    <p>You want to see what <em>didn't</em> work? Early on, we didn't lock the Base Product dropdown during active editing.</p>
+    <p>Admins would spend 10 minutes diligently tagging 15 different NetCollector versions on the right pane[cite: 2]. Then, they would accidentally change the Base Product dropdown at the top of the screen before hitting save. <em>Poof.</em> Everything vanished. The rage was palpable.</p>
+
+    <!-- IMAGE 7: Messy Draft / Failure -->
+    <div class="figure-wrapper">
+      <div class="css-diagram">
+        <div class="ui-card node-alert" style="max-width: 500px; text-align: left;">
+          <div style="color: var(--rb-alert); font-weight: bold; margin-bottom: 0.5rem;">⚠️ ERROR: STATE OVERWRITTEN</div>
+          <p style="font-size: 0.9rem; color: var(--text-main); margin: 0;">Admin changed dropdown to NetAuditor while 12 tags were unsaved in the staging area. Data lost.</p>
+        </div>
+      </div>
+      <div class="figure-caption">IMAGE 7: Early Draft Failure – Silent data loss due to missing interaction guardrails.</div>
+    </div>
+
+    <div class="failure-box">
+      <p><strong>The Fix:</strong> We had to introduce friction to save data. If an admin tries to navigate away with unsaved mappings, we throw a strict, unavoidable modal warning.</p>
+    </div>
+
+    <!-- IMAGE 8: The Modal -->
+    <div class="figure-wrapper">
+      <div class="css-diagram">
+        <div class="ui-card" style="max-width: 380px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+          <h3 style="margin-bottom: 1rem; color: var(--text-main);">Are you sure?[cite: 2]</h3>
+          <p style="font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--text-muted);">You want to discard the selected product. All your efforts will be refused once the product is changed.[cite: 2]</p>
+          <div style="display: flex; gap: 1rem; justify-content: center;">
+            <div style="padding: 0.5rem 1.5rem; background: var(--border-focus); border-radius: 4px; cursor: pointer;">Yes[cite: 2]</div>
+            <div style="padding: 0.5rem 1.5rem; background: var(--rb-purple); color: white; border-radius: 4px; cursor: pointer;">No[cite: 2]</div>
+          </div>
+        </div>
+      </div>
+      <div class="figure-caption">IMAGE 8: Iteration Outcome – The hard-block modal to prevent admin data loss[cite: 2].</div>
+    </div>
+  </section>
+
+  <!-- GUIDED TOUR -->
+  <section class="section-block">
+    <span class="kicker">Guided Tour</span>
+    <h2>Walking Through the Final Solution</h2>
+    <p>Let's look at the final UI decisions that solved the core problems.</p>
+
+    <h3>1. Embedded Insights (The Support View)</h3>
+    <p>Instead of hiding prerequisites in an appendix, we injected the caveats directly into the results list. You literally cannot click a version without seeing the warning.</p>
+
+    <!-- IMAGE 9: Consumer UI -->
+    <div class="figure-wrapper">
+      <div class="css-diagram">
+        <div class="ui-card" style="max-width: 600px;">
+          <div class="ui-header">
+            <span>Check interoperability of products[cite: 2]</span>
+            <span>Product A: NetShark 10.19.0[cite: 2]</span>
+          </div>
+          
+          <div class="ui-row">
+            <div>
+              <strong style="color:var(--text-main)">AppResponse</strong><br>
+              <span style="font-size: 0.9rem; color: var(--text-muted);">Version 9.6.2[cite: 2]</span>
+            </div>
+            <div style="text-align: right; max-width: 60%;">
+              <div class="annotation" style="border-color: var(--rb-orange); color: var(--rb-orange);">
+                All listed versions of AppResponse require a Shark Module license[cite: 2]
+              </div>
+            </div>
+          </div>
+
+          <div class="ui-row" style="border: none;">
+            <div>
+              <strong style="color:var(--text-main)">NetIM Products</strong><br>
+              <span style="font-size: 0.9rem; color: var(--text-muted);">Version 2.5.0[cite: 2]</span>
+            </div>
+            <div style="text-align: right; max-width: 60%;">
+              <div class="annotation" style="border-color: var(--text-subtle); color: var(--text-subtle);">
+                Partial compatibility, see KB #29125[cite: 2]
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="figure-caption">IMAGE 9: Guided Tour (Consumer) – Contextual warnings embedded directly in the data flow[cite: 2].</div>
+    </div>
+
+    <h3>2. Dual-Pane Staging (The Admin View)</h3>
+    <p>Admins can now search the "NOT Interoperable" pool on the left, click '+ ADD', and watch it appear as a tag on the right[cite: 2]. We also added a persistent "Bulk Upload" button for major release cycles[cite: 2].</p>
+
+    <!-- IMAGE 10: Admin UI -->
+    <div class="figure-wrapper">
+      <div class="css-diagram">
+        <div class="ui-card" style="max-width: 700px;">
+          <div class="ui-header">
+            <span>Data Entry for SteelCentral interoperability[cite: 2]</span>
+            <span style="border: 1px solid var(--border-focus); padding: 0.2rem 0.5rem; border-radius: 4px;">☁ Bulk Upload[cite: 2]</span>
+          </div>
+          
+          <div class="flex-row" style="align-items: stretch;">
+            <!-- Left Pane -->
+            <div style="flex: 1; border-right: 1px solid var(--border-light); padding-right: 1.5rem;">
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">Products that are NOT interoperable...[cite: 2]</div>
+              <div class="ui-row" style="border-bottom: none; padding: 0.25rem 0;">
+                <span>NetAuditor 10.19.0[cite: 2]</span> <span style="color:var(--rb-purple); font-size: 0.8rem; cursor: pointer;">+ ADD[cite: 2]</span>
+              </div>
+              <div class="ui-row" style="border-bottom: none; padding: 0.25rem 0;">
+                <span>NetAuditor 10.19.1[cite: 2]</span> <span style="color:var(--rb-purple); font-size: 0.8rem; cursor: pointer;">+ ADD[cite: 2]</span>
+              </div>
+            </div>
+            
+            <!-- Right Pane -->
+            <div style="flex: 1; padding-left: 1.5rem;">
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">Products interoperable with...[cite: 2]</div>
+              <div style="margin-bottom: 1.5rem;">
+                <span class="ui-tag">NetCollector 18.0.8 <span class="btn-remove">×</span>[cite: 2]</span>
+                <span class="ui-tag">NetCollector 18.0.9 <span class="btn-remove">×</span>[cite: 2]</span>
+              </div>
+              <div style="border-top: 1px solid var(--border-light); padding-top: 1rem;">
+                <span style="font-size: 0.8rem; color: var(--text-subtle);">Add note for a specific version[cite: 2]</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="figure-caption">IMAGE 10: Guided Tour (Admin) – The dual-pane staging workspace and bulk upload access[cite: 2].</div>
+    </div>
+  </section>
+
+  <!-- USABILITY & IMPACT -->
+  <section class="section-block">
+    <span class="kicker">Validation</span>
+    <h2>Usability Testing: Measuring the Impact</h2>
+    <p>We ran validation sessions with 4 database managers using the new dual-pane admin interface.</p>
+    <ul>
+      <li><strong>Time on Task:</strong> Dropped from over 4 minutes per mapping to under 45 seconds.</li>
+      <li><strong>Error Rate:</strong> Near zero, thanks to the modal guardrails[cite: 2].</li>
+      <li><strong>Support Tickets:</strong> The clear, embedded caveats in the end-user UI reduced misconfiguration tickets drastically.</li>
+    </ul>
+
+    <!-- IMAGE 11: Usability Quote -->
+    <div class="figure-wrapper">
+      <div class="css-diagram" style="padding: 4rem 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🗣️</div>
+        <h3 style="color: var(--text-main); font-size: 1.5rem; font-style: italic; max-width: 600px; text-align: center;">"I don't have to keep a notepad open on my second monitor just to remember what I'm mapping anymore."</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">— Lead Support Engineer during UAT</p>
+      </div>
+      <div class="figure-caption">IMAGE 11: Usability Testing – Raw feedback from the internal teams.</div>
+    </div>
+
+    <!-- IMAGE 12: Impact Metrics -->
+    <div class="figure-wrapper">
+      <div class="css-diagram flex-row">
+        <div class="node">
+          <div style="font-size: 3rem; color: var(--rb-success); font-weight: 600; line-height: 1;">-75%</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Time on Task (Admin)</div>
+        </div>
+        <div class="node">
+          <div style="font-size: 3rem; color: var(--rb-orange); font-weight: 600; line-height: 1;">0</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Data Loss Incidents</div>
+        </div>
+        <div class="node">
+          <div style="font-size: 3rem; color: var(--rb-purple); font-weight: 600; line-height: 1;">10k+</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Nodes Managed</div>
+        </div>
+      </div>
+      <div class="figure-caption">IMAGE 12: Business Impact & System Metrics.</div>
+    </div>
+  </section>
+
+  <!-- THE TAKEAWAY -->
+  <section class="section-block" style="border-top: 1px solid var(--border-light); padding-top: 4rem;">
+    <span class="kicker">Conclusion</span>
+    <h2>The Takeaway</h2>
+    <p>If there is one thing this project reinforced for me, it's that <strong>context is everything</strong>. You can have the most accurate database in the world, but if the end-user has to hunt for the exceptions, they will fail.</p>
+    <p>By treating "exceptions" (like licenses and patches) as first-class citizens in the UI[cite: 2], and by turning a tedious database entry task into a rapid, visual tagging exercise[cite: 2], we removed the friction from maintaining a highly complex system. We made it hard to make mistakes, and easy to find answers.</p>
+  </section>
+
+</main>
+
+<footer style="text-align: center; padding: 3rem; border-top: 1px solid var(--border-light); font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted); background: var(--bg-secondary);">
+  <p>© 2026 Saurabh Dixit — UX Case Study</p>
+</footer>
+
+</body>
+</html>
