@@ -563,9 +563,40 @@ footer p{font-family:var(--mono);font-size:0.7rem;color:var(--text3);margin:0}
 
   <div class="fig r in">
     <div class="fig-body" style="padding:1.25rem">
-      <img src="affinity map.png" alt="Riverbed Logo" class="img-header" style="background: white; padding: 4rem; object-fit: contain; height: 250px;">
-  </div>
+      <div class="sheet">
+        <div class="sheet-hd">
+          <div class="sc h">Base Product</div><div class="sc h">Base Ver.</div>
+          <div class="sc h">Target</div><div class="sc h">Target Ver.</div>
+          <div class="sc h">Status</div><div class="sc h">Notes (Col Z)</div>
+        </div>
+        <div class="sheet-row">
+          <div class="sc">NetProfiler</div><div class="sc">10.19.0</div>
+          <div class="sc">AppResponse</div><div class="sc">9.6.2</div>
+          <div class="sc w">CONDITIONAL</div>
+          <div class="sc n">Requires Shark Module license. Missing → silent fail. Error NP-4401. See KB.</div>
+        </div>
+        <div class="sheet-row">
+          <div class="sc">NetProfiler</div><div class="sc">10.19.0</div>
+          <div class="sc">NetIM</div><div class="sc">2.5.0</div>
+          <div class="sc g">YES</div><div class="sc n">—</div>
+        </div>
+        <div class="sheet-row">
+          <div class="sc">NetShark</div><div class="sc">10.18.1</div>
+          <div class="sc">AppResponse</div><div class="sc">9.5.x</div>
+          <div class="sc e">NO</div>
+          <div class="sc n">API changes in 9.5 break handshake. Patch required first.</div>
+        </div>
+        <div class="sheet-row">
+          <div class="sc">NetAuditor</div><div class="sc">10.19.1</div>
+          <div class="sc">NetProfiler</div><div class="sc">10.19.0</div>
+          <div class="sc w">CONDITIONAL</div>
+          <div class="sc n">Requires Liveaction plugin v3.2+. Missing = data loss on reporting.</div>
+        </div>
+        <div class="sheet-more">… 9,996 more rows · maintained manually · owner: unknown · last updated: —</div>
+      </div>
+    </div>
     <div class="fig-cap">The inherited spreadsheet. Column Z is where caveats go to die.</div>
+  </div>
 
   <p class="r in">I watched three engineers work with this file. One had a second notepad open on a second monitor where he wrote caveats by hand before starting a deployment. Another relied on ctrl+F and hoped he'd searched the right term. The third — who'd been there longest — just relied on memory. <strong>That was the actual failure mode I was designing against: humans compensating for a tool that had stopped working.</strong></p>
 </section>
