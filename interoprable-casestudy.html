@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0068)file:///Users/saurabhdixit/Downloads/riverbed-casestudy-final_1.html -->
+<!-- saved from url=(0064)file:///Users/saurabhdixit/Downloads/interoprable-casestudy.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -459,6 +459,56 @@ footer p{font-family:var(--mono);font-size:0.7rem;color:var(--text3);margin:0}
   .hero h1{font-size:2.2rem}
   .company-banner{flex-direction:column}
 }
+
+/* ════════════════════ REAL RESEARCH IMAGES ════════════════════ */
+.real-img-wrap{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  margin:2.5rem 0;overflow:hidden;
+}
+.real-img-label{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.6rem 1.2rem;
+  background:var(--bg3);border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:0.65rem;color:var(--text3);
+}
+.real-img-label span{color:var(--text2)}
+.real-img-tag{
+  font-family:var(--mono);font-size:0.6rem;
+  padding:0.15rem 0.55rem;border-radius:2rem;
+  border:1px solid var(--border2);color:var(--text3);
+}
+.real-img-body{
+  padding:1.5rem;display:flex;align-items:center;justify-content:center;
+  background:var(--bg2);
+}
+.real-img-body img{
+  width:100%;max-width:100%;height:auto;
+  border-radius:6px;
+  border:1px solid var(--border);
+  display:block;
+}
+.real-img-cap{
+  font-family:var(--mono);font-size:0.68rem;color:var(--text3);
+  padding:0.65rem 1.2rem;
+  border-top:1px solid var(--border);background:var(--bg);
+  display:flex;align-items:center;gap:0.4rem;
+}
+.real-img-cap::before{content:'↳ Real artifact:';color:var(--border2)}
+/* annotation overlay row below image */
+.img-annotations{
+  display:flex;gap:0;border-top:1px solid var(--border);
+}
+.img-ann{
+  flex:1;padding:0.9rem 1rem;border-right:1px solid var(--border);
+  background:var(--bg2);
+}
+.img-ann:last-child{border-right:none}
+.img-ann-n{
+  font-family:var(--mono);font-size:0.6rem;color:var(--text3);
+  margin-bottom:0.3rem;
+}
+.img-ann-text{font-size:0.78rem;color:var(--text2);line-height:1.5;font-weight:300}
+.img-ann-text strong{color:var(--text);font-weight:500}
 </style>
 </head>
 <body>
@@ -561,41 +611,29 @@ footer p{font-family:var(--mono);font-size:0.7rem;color:var(--text3);margin:0}
   </div>
   <p class="r in">This is what I inherited on day one. Three support engineers. One spreadsheet. No process.</p>
 
-  <div class="fig r in">
-    <div class="fig-body" style="padding:1.25rem">
-      <div class="sheet">
-        <div class="sheet-hd">
-          <div class="sc h">Base Product</div><div class="sc h">Base Ver.</div>
-          <div class="sc h">Target</div><div class="sc h">Target Ver.</div>
-          <div class="sc h">Status</div><div class="sc h">Notes (Col Z)</div>
-        </div>
-        <div class="sheet-row">
-          <div class="sc">NetProfiler</div><div class="sc">10.19.0</div>
-          <div class="sc">AppResponse</div><div class="sc">9.6.2</div>
-          <div class="sc w">CONDITIONAL</div>
-          <div class="sc n">Requires Shark Module license. Missing → silent fail. Error NP-4401. See KB.</div>
-        </div>
-        <div class="sheet-row">
-          <div class="sc">NetProfiler</div><div class="sc">10.19.0</div>
-          <div class="sc">NetIM</div><div class="sc">2.5.0</div>
-          <div class="sc g">YES</div><div class="sc n">—</div>
-        </div>
-        <div class="sheet-row">
-          <div class="sc">NetShark</div><div class="sc">10.18.1</div>
-          <div class="sc">AppResponse</div><div class="sc">9.5.x</div>
-          <div class="sc e">NO</div>
-          <div class="sc n">API changes in 9.5 break handshake. Patch required first.</div>
-        </div>
-        <div class="sheet-row">
-          <div class="sc">NetAuditor</div><div class="sc">10.19.1</div>
-          <div class="sc">NetProfiler</div><div class="sc">10.19.0</div>
-          <div class="sc w">CONDITIONAL</div>
-          <div class="sc n">Requires Liveaction plugin v3.2+. Missing = data loss on reporting.</div>
-        </div>
-        <div class="sheet-more">… 9,996 more rows · maintained manually · owner: unknown · last updated: —</div>
+  <div class="real-img-wrap r in">
+    <div class="real-img-label">
+      <span>📄 spradsheet.png — The actual inherited spreadsheet</span>
+      <span class="real-img-tag">Real artifact</span>
+    </div>
+    <div class="real-img-body">
+      <img src="file:///Users/saurabhdixit/Downloads/spradsheet.png" alt="The actual Riverbed SteelCentral compatibility spreadsheet that support engineers were using — showing conditional status rows, version numbers, and critical caveats buried in Column Z with colour-coded notes that were easy to miss under pressure." loading="lazy">
+    </div>
+    <div class="img-annotations">
+      <div class="img-ann">
+        <div class="img-ann-n">⚠ Pain point 1</div>
+        <div class="img-ann-text"><strong>Caveats in Column Z.</strong> Critical conditions like "Requires Shark Module license → silent fail" sit in the last column. Engineers scrolling right often lose row context.</div>
+      </div>
+      <div class="img-ann">
+        <div class="img-ann-n">⚠ Pain point 2</div>
+        <div class="img-ann-text"><strong>Colour-coded manually.</strong> Yellow, red, purple notes were applied by hand. No consistency. A new engineer had no legend to read.</div>
+      </div>
+      <div class="img-ann">
+        <div class="img-ann-n">⚠ Pain point 3</div>
+        <div class="img-ann-text"><strong>CONDITIONAL has no structure.</strong> Every conditional row means something different. The only way to know what is to read the note — if you noticed it was there.</div>
       </div>
     </div>
-    <div class="fig-cap">The inherited spreadsheet. Column Z is where caveats go to die.</div>
+    <div class="real-img-cap">The inherited spreadsheet. Column Z is where caveats go to die. This is the document three engineers were relying on for $50k deployment decisions.</div>
   </div>
 
   <p class="r in">I watched three engineers work with this file. One had a second notepad open on a second monitor where he wrote caveats by hand before starting a deployment. Another relied on ctrl+F and hoped he'd searched the right term. The third — who'd been there longest — just relied on memory. <strong>That was the actual failure mode I was designing against: humans compensating for a tool that had stopped working.</strong></p>
@@ -709,6 +747,33 @@ footer p{font-family:var(--mono);font-size:0.7rem;color:var(--text3);margin:0}
   <h2 class="r in">I assumed they thought in matrices. Every single one of them thought in shopping carts.</h2>
   <p class="r in">Before drawing another wireframe, I ran observation sessions with five database managers — the people who enter and maintain the compatibility data. I went in with a hypothesis: these are deeply technical people who live in spreadsheets. They want a grid-style data entry system.</p>
   <p class="r in">I was completely wrong.</p>
+
+  <p class="r in">Here's the full affinity map from that research phase — 8 user interviews and 3 contextual inquiry sessions synthesised into the patterns that directly changed the design direction:</p>
+
+  <div class="real-img-wrap r in">
+    <div class="real-img-label">
+      <span>🗂 affinity_map.png — User research synthesis · January 2025</span>
+      <span class="real-img-tag">Real artifact</span>
+    </div>
+    <div class="real-img-body" style="padding:1.25rem;background:#f8f8f8;">
+      <img src="file:///Users/saurabhdixit/Downloads/affinity_map.png" alt="Affinity map from Riverbed SteelCentral interoperability research — showing pain points, current workarounds, needs and expectations, emotions, and key takeaways from 8 user interviews and 3 contextual inquiry sessions with support engineers and system admins." loading="lazy" style="border-radius:8px;border:1px solid #ddd;">
+    </div>
+    <div class="img-annotations">
+      <div class="img-ann">
+        <div class="img-ann-n">🔴 Pain Points cluster</div>
+        <div class="img-ann-text"><strong>"Too much data to scan"</strong> and <strong>"hard to find specific version compatibility"</strong> — confirmed the spreadsheet's scale problem wasn't a data quality issue, it was a navigation problem.</div>
+      </div>
+      <div class="img-ann">
+        <div class="img-ann-n">💜 Needs &amp; Expectations cluster</div>
+        <div class="img-ann-text"><strong>"Confidence before publish"</strong> and <strong>"better visibility of exceptions"</strong> — engineers didn't just want speed. They wanted to feel safe before committing to a deployment.</div>
+      </div>
+      <div class="img-ann">
+        <div class="img-ann-n">⭐ Key Takeaway that changed everything</div>
+        <div class="img-ann-text"><strong>"Users think in products, not matrices"</strong> — this single insight from the synthesis killed the grid paradigm and drove the pool-and-bucket architecture.</div>
+      </div>
+    </div>
+    <div class="real-img-cap">Affinity map synthesised from 8 user interviews + 3 contextual inquiry sessions. Methods: user interviews, contextual inquiry, workflow observation, existing spreadsheet analysis.</div>
+  </div>
 
   <div class="fig r in">
     <div class="fig-body">
